@@ -18,7 +18,7 @@ GridMeasure rectifies optical and perspective distortions (camera tilt, rotation
 
 ## Quick Start (Local Server)
 
-Because GridMeasure uses modern JavaScript ES modules, opening `index.html` directly via `file:///` is blocked by browser CORS security policies. Run a local server using either option:
+Because GridMeasure uses modern JavaScript ES modules, opening `index.html` directly via `file:///` is blocked by browser CORS security policies. Run a local server using any of these options:
 
 **Option 1: Python**
 ```bash
@@ -27,8 +27,14 @@ python3 -m http.server 8000
 ```
 Open **`http://localhost:8000`** in any modern browser.
 
-**Option 2: VS Code Live Preview**
-Right-click `index.html` and select **"Live Preview: Show Preview"** (or **"Open with Live Server"**).
+**Option 2: Node.js (npx)**
+```bash
+npx serve .
+```
+Open **`http://localhost:3000`** in any modern browser.
+
+**Option 3: VS Code / IDE Live Preview**
+Right-click `index.html` and select **"Live Preview: Show Preview"** (or **"Open with Live Server"**). *(Requires the Live Preview or Live Server extension).*
 
 ---
 

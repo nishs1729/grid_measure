@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+
+3.<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -16,6 +17,16 @@
     <div class="header-brand">
       <h1>GridMeasure</h1>
       <p class="header-tagline">Calibrate images using grid coordinates and measure distances between points.</p>
+    </div>
+    <div class="header-actions">
+      <button id="instructions-btn" class="btn btn-instructions" aria-haspopup="dialog" aria-expanded="false" title="Instructions & Guide">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8" cy="8" r="7"/>
+          <path d="M6.5 6.2a1.5 1.5 0 0 1 2.8.8c0 .8-.8 1.2-.8 1.8"/>
+          <circle cx="8" cy="11.8" r=".5" fill="currentColor"/>
+        </svg>
+        <span>Instructions</span>
+      </button>
     </div>
   </header>
 
@@ -91,6 +102,280 @@
       </div>
     </aside>
   </main>
+
+  <!-- ===== Instructions Side Drawer / Modal ===== -->
+  <div id="instructions-modal" class="instructions-modal" aria-hidden="true">
+    <div class="instructions-backdrop" id="instructions-backdrop"></div>
+    <aside class="instructions-panel" role="dialog" aria-modal="true" aria-labelledby="instructions-title">
+      <div class="instructions-header">
+        <div class="instructions-title-wrap">
+          <div class="instructions-icon-badge">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 16v-4"/>
+              <path d="M12 8h.01"/>
+            </svg>
+          </div>
+          <div>
+            <h2 id="instructions-title">User Guide & Instructions</h2>
+            <p class="instructions-subtitle">Planar grid calibration & real-world measurement</p>
+          </div>
+        </div>
+        <button id="instructions-close-btn" class="instructions-close-btn" aria-label="Close instructions panel" title="Close (Esc)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 3l10 10M13 3L3 13"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="instructions-body">
+        <!-- Overview Section -->
+        <section class="instructions-section">
+          <h3 class="section-title">What It Is & What It's Used For</h3>
+          <p class="section-text">
+            GridMeasure rectifies optical and perspective distortions (camera tilt, rotation, skew, scale) using a 4-point <strong>2D projective transformation (homography)</strong>. Runs 100% client-side with zero external dependencies.
+          </p>
+          <div class="use-cases-grid">
+            <div class="use-case-card">
+              <span class="use-case-icon">🔬</span>
+              <div>
+                <strong>Specimen & Lab</strong>
+                <span>Leaves, insects, seed sizes, or petri dish samples on millimeter grid paper.</span>
+              </div>
+            </div>
+            <div class="use-case-card">
+              <span class="use-case-icon">📐</span>
+              <div>
+                <strong>Engineering & Inspection</strong>
+                <span>PCB traces, component tolerances, and planar materials sizing.</span>
+              </div>
+            </div>
+            <div class="use-case-card">
+              <span class="use-case-icon">🔍</span>
+              <div>
+                <strong>Forensic & Field Work</strong>
+                <span>Objects photographed in situ with a planar scale marker or grid.</span>
+              </div>
+            </div>
+            <div class="use-case-card">
+              <span class="use-case-icon">📊</span>
+              <div>
+                <strong>Auditable Data Export</strong>
+                <span>Coordinates formatted for exact mathematical pixel reconstruction.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Workflow Section -->
+        <section class="instructions-section">
+          <h3 class="section-title">Step-by-Step Workflow</h3>
+          <div class="steps-list">
+            <!-- Step 1 -->
+            <div class="step-card">
+              <div class="step-badge">1</div>
+              <div class="step-content">
+                <div class="step-header">
+                  <h4>Load Images</h4>
+                </div>
+                <p>Click <strong>Add Images</strong> in the left sidebar (supports PNG, JPEG, WebP, TIFF). Thumbnails show calibration status:</p>
+                <div class="status-indicator-pills">
+                  <span class="status-pill status-none">No border: 0 points</span>
+                  <span class="status-pill status-calib">Yellow border: 1–4 points (calibrating)</span>
+                  <span class="status-pill status-meas">Green border: 5+ points (ready)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-card">
+              <div class="step-badge">2</div>
+              <div class="step-content">
+                <div class="step-header">
+                  <h4>Calibrate Grid (Points P1–P4)</h4>
+                </div>
+                <p>Click the 4 corners of a single known grid square in counter-clockwise order:</p>
+                <div class="calib-order-visual">
+                  <div class="calib-diagram">
+                    <div class="diagram-corner top-left">
+                      <span class="corner-dot"></span>
+                      <span class="corner-label"><strong>P4</strong> (0, 1)</span>
+                    </div>
+                    <div class="diagram-corner top-right">
+                      <span class="corner-dot"></span>
+                      <span class="corner-label"><strong>P3</strong> (1, 1)</span>
+                    </div>
+                    <div class="diagram-inner">Known Grid Square</div>
+                    <div class="diagram-corner bottom-left">
+                      <span class="corner-dot"></span>
+                      <span class="corner-label"><strong>P1</strong> (0, 0)</span>
+                    </div>
+                    <div class="diagram-corner bottom-right">
+                      <span class="corner-dot"></span>
+                      <span class="corner-label"><strong>P2</strong> (1, 0)</span>
+                    </div>
+                  </div>
+                </div>
+                <ul class="step-subpoints">
+                  <li><strong>P1</strong> &rarr; <code>(0,0)</code>: Reference origin</li>
+                  <li><strong>P2</strong> &rarr; <code>(1,0)</code>: One unit along the horizontal X-axis</li>
+                  <li><strong>P3</strong> &rarr; <code>(1,1)</code>: Opposite diagonal corner</li>
+                  <li><strong>P4</strong> &rarr; <code>(0,1)</code>: One unit along the vertical Y-axis</li>
+                </ul>
+                <div class="info-tip">
+                  Placing P4 automatically computes the homography matrix and displays real-time calibration diagnostics.
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-card">
+              <div class="step-badge">3</div>
+              <div class="step-content">
+                <div class="step-header">
+                  <h4>Set Physical Units</h4>
+                </div>
+                <p>
+                  Under <strong>Calibration</strong> in the right sidebar, enter your grid unit size (e.g. <code>10</code> for 10 mm grid spacing). All measurements will display converted physical units in millimeters (<code>mm</code>).
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="step-card">
+              <div class="step-badge">4</div>
+              <div class="step-content">
+                <div class="step-header">
+                  <h4>Place Measurement Points (P5+)</h4>
+                </div>
+                <p>
+                  Click features of interest on the calibrated image. Consecutive points (<code>P5–P6</code>, <code>P7–P8</code>, etc.) automatically compute and display straight-line Euclidean distance in both grid units and millimeters.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="step-card">
+              <div class="step-badge">5</div>
+              <div class="step-content">
+                <div class="step-header">
+                  <h4>Interactive Adjustments & Controls</h4>
+                </div>
+                <ul class="step-subpoints">
+                  <li><strong>Magnifier Loupe:</strong> Hover over the canvas to activate the zoom loupe with crosshairs for sub-pixel precision.</li>
+                  <li><strong>Drag to Reposition:</strong> Click and drag any point to fine-tune its position. Moving P1–P4 instantly recalculates the entire calibration and all downstream measurements.</li>
+                  <li><strong>Delete / Reset:</strong> Click the <strong>&times;</strong> button on any point, use <strong>Delete Last</strong> to pop the newest point, or click <strong>Reset Points</strong> to clear the image.</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Step 6 -->
+            <div class="step-card">
+              <div class="step-badge">6</div>
+              <div class="step-content">
+                <div class="step-header">
+                  <h4>Export & Audit Data</h4>
+                </div>
+                <ul class="step-subpoints">
+                  <li><strong>Export CSV:</strong> Downloads a new CSV containing image metadata, pixel coordinates, calibrated positions, and calculated distances.</li>
+                  <li><strong>Append to CSV:</strong> Select an existing CSV file to append records from additional images, creating a consolidated dataset.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Diagnostics Section -->
+        <section class="instructions-section">
+          <h3 class="section-title">Calibration Diagnostics Explained</h3>
+          <p class="section-text">
+            Once P1–P4 are placed, 5 diagnostic cards appear in the right sidebar to assess calibration quality:
+          </p>
+          <div class="diagnostics-table-wrap">
+            <table class="instructions-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>What It Measures</th>
+                  <th>Interpretation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Rotation</strong></td>
+                  <td>Angle of vector P1 &rarr; P2 relative to image horizontal</td>
+                  <td>Grid tilt relative to camera sensor (e.g. <code>+2.4°</code>). Compensated automatically.</td>
+                </tr>
+                <tr>
+                  <td><strong>Scale</strong></td>
+                  <td>Pixel resolution per unit (px/unit) & physical density (px/mm)</td>
+                  <td>Higher values = greater precision. Compares X vs Y resolution (U &times; V).</td>
+                </tr>
+                <tr>
+                  <td><strong>Aspect Ratio</strong></td>
+                  <td>Ratio of vertical to horizontal unit length (|P4-P1| / |P2-P1|)</td>
+                  <td><code>1.000</code> is ideal (Square ✓). Deviations indicate non-square pixels or angled tilt.</td>
+                </tr>
+                <tr>
+                  <td><strong>Corner Angle</strong></td>
+                  <td>Angle between P1 &rarr; P2 and P1 &rarr; P4</td>
+                  <td><code>90.0°</code> is ideal (Orthogonal ✓). Deviations highlight shear skew or perspective slant.</td>
+                </tr>
+                <tr>
+                  <td><strong>Perspective</strong></td>
+                  <td>Homography projective magnitude & keystone ratio</td>
+                  <td>Categorized <em>None</em> to <em>Strong</em>. Confirms perspective foreshortening correction.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Reconstruction & Auditability -->
+        <section class="instructions-section">
+          <h3 class="section-title">Export Format & Complete Reconstruction</h3>
+          <p class="section-text">
+            GridMeasure exports image metadata, raw pixel coordinates for calibration points <code>P1–P4</code>, and calibrated grid coordinates for measurement points <code>P5+</code>.
+          </p>
+          <div class="audit-card">
+            <div class="audit-icon">📐</div>
+            <div class="audit-text">
+              Because the 3&times;3 homography matrix <strong>H</strong> is invertible, downstream scripts can analytically calculate <strong>H<sup>-1</sup></strong> to reconstruct exact original pixel coordinates on the raw image, guaranteeing full scientific auditability.
+            </div>
+          </div>
+        </section>
+
+        <!-- Quick Shortcuts -->
+        <section class="instructions-section">
+          <h3 class="section-title">Quick Controls Summary</h3>
+          <div class="shortcuts-grid">
+            <div class="shortcut-item">
+              <span class="shortcut-key">Left Click</span>
+              <span class="shortcut-desc">Place calibration or measurement point</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">Drag Point</span>
+              <span class="shortcut-desc">Reposition point & recalculate in real time</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">Hover Canvas</span>
+              <span class="shortcut-desc">Activate magnifier zoom loupe with crosshair</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">Esc</span>
+              <span class="shortcut-desc">Close this instructions panel</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="instructions-footer">
+        <button id="instructions-done-btn" class="btn btn-primary instructions-done-btn">
+          Got it, let's measure
+        </button>
+      </div>
+    </aside>
+  </div>
 
   <script type="module" src="js/app.js"></script>
 </body>

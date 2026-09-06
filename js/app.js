@@ -7,6 +7,7 @@ import { initImageLoader, renderImageList } from './imageLoader.js';
 import { initCanvas, renderCanvas, initMagnifier } from './canvas.js';
 import { initSidebar, renderSidebar } from './sidebar.js';
 import { initCsvExport } from './csvExport.js';
+import { initInstructions } from './instructions.js';
 
 /**
  * Full UI update callback.
@@ -26,6 +27,7 @@ function init() {
   initMagnifier();
   initSidebar(onUpdate);
   initCsvExport(onUpdate);
+  initInstructions();
 
   // Initial render
   onUpdate();
