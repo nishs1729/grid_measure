@@ -82,3 +82,55 @@ GridMeasure exports:
 - **Calibrated grid coordinates** for measurement points `P5+`.
 
 Because the 3x3 homography matrix $H$ is invertible, downstream scripts can analytically recalculate $H^{-1}$ and reconstruct the exact pixel locations on the original image, guaranteeing full scientific auditability.
+
+---
+
+## Downstream Analysis Scripts (`analysis/`)
+
+The repository includes Python tools in the `analysis/` directory to parse exported CSV data, compute geometric metrics, and render visualizations:
+
+- **`analysis/ventrum.py`**: Driver CLI script for processing measurements.
+- **`analysis/src/analysis.py`**: Core mathematical functions (homography inversion, coordinate mapping, perpendicular distance, CSV calculations export).
+- **`analysis/src/plot_util.py`**: Pillow-based plotting and visualization utilities.
+
+### Requirements
+
+```bash
+pip install numpy pillow
+```
+
+### Running Analysis (`ventrum.py`)
+
+Run the script on exported data:
+
+```bash
+# Process all rows in the default CSV and generate <input>_calc.csv
+python3 analysis/ventrum.py
+
+# Specify a custom CSV file
+python3 analysis/ventrum.py --csv path/to/measurements.csv
+
+# Render and inspect a specific image/row (e.g. row 0)
+python3 analysis/ventrum.py --show-row 0
+
+# Save the rendered plot to a file
+python3 analysis/ventrum.py --show-row 0 --save-plot output.png
+```
+
+### CLI Arguments
+
+| Flag | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `-h`, `--help` | flag | — | Displays the help text and exits. |
+| `--csv` | string / path | `analysis/data/test_measurements.csv` | Path to the input GridMeasure CSV export file. |
+| `--show-row` | integer | `None` | 0-indexed row number to plot and display. When omitted, all rows are processed and summarized. |
+| `--save-plot` | string / path | `None` | Optional file path (e.g., `output.png`) to save the rendered visualization. |
+
+### Calculated Output (`*_calc.csv`)
+
+Running `ventrum.py` automatically generates a companion file `<input_csv>_calc.csv` containing:
+- `P5_P6_distance`: Calibrated distance between baseline points P5 and P6.
+- `P7_perp_distance`: Calibrated perpendicular drop from point P7 to baseline P5–P6.
+- `P8_P9_distance`: Calibrated distance between baseline points P8 and P9.
+- `P10_perp_distance`: Calibrated perpendicular drop from point P10 to baseline P8–P9.
+
