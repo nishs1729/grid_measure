@@ -3,7 +3,7 @@
  */
 
 import state, { getSelectedImage } from './state.js';
-import { getPointColor, getStatusMessage, deleteLastPoint, resetPoints } from './points.js';
+import { getPointColor, getStatusMessage, deleteLastPoint, resetPoints, recalibrate } from './points.js';
 
 /**
  * Initialize sidebar event handlers.
@@ -35,6 +35,31 @@ export function initSidebar(onUpdate) {
     state.gridUnitSize = isNaN(val) || val <= 0 ? null : val;
     renderSidebar(onUpdate);
   });
+
+  // Calibration grid destination inputs (P1–P4 x/y)
+  for (let i = 0; i < 4; i++) {
+    const xInput = document.getElementById(`calib-dst-p${i + 1}-x`);
+    const yInput = document.getElementById(`calib-dst-p${i + 1}-y`);
+    if (!xInput || !yInput) continue;
+
+    const handler = (axis, el) => {
+      const val = parseFloat(el.value);
+      if (!isNaN(val)) {
+        state.calibDst[i][axis] = val;
+        // Sync already-placed calib point grid coord
+        const img = getSelectedImage();
+        if (img && i < img.points.length) {
+          img.points[i].gridX = state.calibDst[i].x;
+          img.points[i].gridY = state.calibDst[i].y;
+          if (img.points.length >= 4) recalibrate(img);
+        }
+        onUpdate();
+      }
+    };
+
+    xInput.addEventListener('input', () => handler('x', xInput));
+    yInput.addEventListener('input', () => handler('y', yInput));
+  }
 }
 
 /**

@@ -91,20 +91,23 @@ export function computeHomography(src, dst) {
 
 /**
  * Compute the homography from 4 calibration points (image pixels)
- * using the fixed grid destinations: (0,0), (1,0), (1,1), (0,1).
+ * using fixed or user-supplied grid destinations.
  *
  * @param {Array<{x: number, y: number}>} calibPoints — P1..P4 image pixel coords
+ * @param {Array<{x: number, y: number}>} [dst] — optional grid destinations for P1..P4;
+ *   defaults to the anticlockwise unit square: (0,0),(1,0),(1,1),(0,1).
  * @returns {Float64Array} — 3×3 homography matrix
  */
-export function computeCalibrationHomography(calibPoints) {
-  const dst = [
+export function computeCalibrationHomography(calibPoints, dst = null) {
+  const gridDst = dst ?? [
     { x: 0, y: 0 },
     { x: 1, y: 0 },
     { x: 1, y: 1 },
     { x: 0, y: 1 },
   ];
-  return computeHomography(calibPoints, dst);
+  return computeHomography(calibPoints, gridDst);
 }
+
 
 /**
  * Apply the homography to transform a point.

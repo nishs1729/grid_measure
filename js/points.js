@@ -42,12 +42,11 @@ export function addPoint(pixelX, pixelY) {
   let gridX = null;
   let gridY = null;
 
-  // Calibration points have fixed grid coordinates
-  if (index === 0) { gridX = 0; gridY = 0; }
-  else if (index === 1) { gridX = 1; gridY = 0; }
-  else if (index === 2) { gridX = 1; gridY = 1; }
-  else if (index === 3) { gridX = 0; gridY = 1; }
-  else if (img.calibration.homography) {
+  // Calibration points have fixed grid coordinates from state.calibDst
+  if (index < 4) {
+    gridX = state.calibDst[index].x;
+    gridY = state.calibDst[index].y;
+  } else if (img.calibration.homography) {
     // Measurement point: compute grid coords via homography
     const g = applyHomography(img.calibration.homography, pixelX, pixelY);
     gridX = g.x;
@@ -143,7 +142,7 @@ export function recalibrate(img) {
   }));
 
   try {
-    img.calibration.homography = computeCalibrationHomography(calibPoints);
+    img.calibration.homography = computeCalibrationHomography(calibPoints, state.calibDst);
   } catch (e) {
     console.error('Homography computation failed:', e);
     img.calibration.homography = null;

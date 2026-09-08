@@ -54,6 +54,10 @@ function buildHeader(maxMeas) {
     'P2_pixel_x', 'P2_pixel_y',
     'P3_pixel_x', 'P3_pixel_y',
     'P4_pixel_x', 'P4_pixel_y',
+    'P1_grid_x', 'P1_grid_y',
+    'P2_grid_x', 'P2_grid_y',
+    'P3_grid_x', 'P3_grid_y',
+    'P4_grid_x', 'P4_grid_y',
   ];
   for (let i = 0; i < maxMeas; i++) {
     const pn = i + 5;
@@ -72,17 +76,23 @@ function buildRow(img, totalCols) {
   row[1] = img.width;
   row[2] = img.height;
 
-  // P1-P4 pixel coordinates
+  // P1-P4 pixel coordinates (cols 3-10)
   for (let i = 0; i < 4 && i < img.points.length; i++) {
     const pt = img.points[i];
     row[3 + i * 2] = pt.pixelX.toFixed(1);
     row[3 + i * 2 + 1] = pt.pixelY.toFixed(1);
   }
 
-  // P5+ grid coordinates
+  // P1-P4 grid destinations from state.calibDst (cols 11-18)
+  for (let i = 0; i < 4; i++) {
+    row[11 + i * 2] = state.calibDst[i].x;
+    row[11 + i * 2 + 1] = state.calibDst[i].y;
+  }
+
+  // P5+ grid coordinates (cols 19+)
   for (let i = 4; i < img.points.length; i++) {
     const pt = img.points[i];
-    const colIdx = 11 + (i - 4) * 2;
+    const colIdx = 19 + (i - 4) * 2;
     if (colIdx < totalCols) {
       row[colIdx] = pt.gridX != null ? pt.gridX.toFixed(4) : '';
       row[colIdx + 1] = pt.gridY != null ? pt.gridY.toFixed(4) : '';

@@ -12,18 +12,32 @@ from typing import Any, Mapping
 import numpy as np
 
 
+# Default calibration destinations: anticlockwise unit square
+# P1->(0,0), P2->(1,0), P3->(1,1), P4->(0,1)
+DEFAULT_CALIB_DST: list[tuple[float, float]] = [
+    (0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)
+]
+
+
 def compute_calibration_homography(
     p1: tuple[float, float],
     p2: tuple[float, float],
     p3: tuple[float, float],
     p4: tuple[float, float],
+    dst: list[tuple[float, float]] | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Computes 3x3 homography H (pixel -> grid) and H_inv (grid -> pixel)."""
+    """Computes 3x3 homography H (pixel -> grid) and H_inv (grid -> pixel).
+
+    Args:
+        p1..p4: Image pixel coordinates of the four calibration points.
+        dst: Grid-space destinations for p1..p4. Defaults to the anticlockwise
+             unit square: [(0,0),(1,0),(1,1),(0,1)].
+    """
     src = [p1, p2, p3, p4]
-    dst = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+    grid_dst = dst if dst is not None else DEFAULT_CALIB_DST
 
     A, b = [], []
-    for (x, y), (u, v) in zip(src, dst):
+    for (x, y), (u, v) in zip(src, grid_dst):
         A.extend([
             [x, y, 1.0, 0.0, 0.0, 0.0, -u * x, -u * y],
             [0.0, 0.0, 0.0, x, y, 1.0, -v * x, -v * y],
@@ -63,13 +77,35 @@ def compute_three_point_metrics(
 
 
 def extract_row_points(row: Mapping[str, Any]) -> dict[str, Any]:
-    """Extracts calibration (P1-P4) and measurement points (P5+) from a CSV row."""
+    """Extracts calibration (P1-P4) and measurement points (P5+) from a CSV row.
+
+    Calibration grid destinations are read from the CSV columns P1_grid_x/y ..
+    P4_grid_x/y when present (exported by GridMeasure when custom coordinates are
+    set). Falls back to DEFAULT_CALIB_DST (the anticlockwise unit square) for
+    older CSV files that do not contain these columns.
+    """
     image_name = str(row.get("image", "untitled"))
     orig_w = int(float(row.get("image_width", 1000)))
     orig_h = int(float(row.get("image_height", 1000)))
 
     calib = {f"P{i}": (float(row[f"P{i}_pixel_x"]), float(row[f"P{i}_pixel_y"])) for i in range(1, 5)}
-    H, H_inv = compute_calibration_homography(calib["P1"], calib["P2"], calib["P3"], calib["P4"])
+
+    # Read calibration grid destinations from CSV (P1_grid_x/y .. P4_grid_x/y).
+    # Fall back to defaults when the columns are absent (older CSV exports).
+    calib_dst: list[tuple[float, float]] = []
+    for i in range(1, 5):
+        gx_key, gy_key = f"P{i}_grid_x", f"P{i}_grid_y"
+        if gx_key in row and row[gx_key] not in (None, ""):
+            calib_dst.append((float(row[gx_key]), float(row[gy_key])))
+        else:
+            calib_dst = []  # partial data — fall back entirely to defaults
+            break
+    dst = calib_dst if calib_dst else None
+
+    H, H_inv = compute_calibration_homography(
+        calib["P1"], calib["P2"], calib["P3"], calib["P4"],
+        dst=dst,
+    )
 
     meas_grid, meas_pixel = {}, {}
     for key, val in row.items():
@@ -88,6 +124,7 @@ def extract_row_points(row: Mapping[str, Any]) -> dict[str, Any]:
         "H": H,
         "H_inv": H_inv,
         "calibration_pixel": calib,
+        "calibration_dst": calib_dst if calib_dst else list(DEFAULT_CALIB_DST),
         "measurement_grid": meas_grid,
         "measurement_pixel": meas_pixel,
     }
@@ -137,12 +174,18 @@ def measure_triplet_sets(row: Mapping[str, Any], verbose: bool = True) -> dict[s
     return results
 
 
-def export_calculated_distances(csv_path: str | Path, output_csv: str | Path | None = None) -> Path:
+def export_calculated_distances(
+    csv_path: str | Path,
+    output_csv: str | Path | None = None,
+) -> Path:
     """
     Reads an input CSV, calculates the two distances for both sets of points:
       - Set 1: P5_P6_distance, P7_perp_distance
       - Set 2: P8_P9_distance, P10_perp_distance
     and exports them to <input_csv>_calc.csv.
+
+    Calibration grid destinations are read automatically from P1_grid_x/y ..
+    P4_grid_x/y columns when present in the CSV.
     """
     in_file = Path(csv_path)
     out_file = Path(output_csv) if output_csv else in_file.with_name(f"{in_file.stem}_calc.csv")

@@ -29,6 +29,18 @@ const state = {
 
   /** Physical unit label */
   gridUnitLabel: 'mm',
+
+  /**
+   * Grid-space destinations for calibration points P1–P4.
+   * Default: anticlockwise unit square — P1→(0,0), P2→(1,0), P3→(1,1), P4→(0,1).
+   * Each entry can be changed independently via the sidebar inputs.
+   */
+  calibDst: [
+    { x: 0, y: 0 }, // P1
+    { x: 1, y: 0 }, // P2
+    { x: 1, y: 1 }, // P3
+    { x: 0, y: 1 }, // P4
+  ],
 };
 
 /**

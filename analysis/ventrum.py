@@ -37,7 +37,21 @@ if __name__ == "__main__":
         default_csv = Path("analysis/data/test_measurements.csv")
 
     parser = argparse.ArgumentParser(
-        description="Plot GridMeasure points and measure consecutive triplet sets (ventrum)."
+        description="Plot GridMeasure points and measure consecutive triplet sets (ventrum).",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""\
+notes:
+  Calibration grid coordinates (P1\u2013P4 grid destinations) are read automatically
+  from the P1_grid_x/y .. P4_grid_x/y columns in the CSV, exported by
+  GridMeasure when custom coordinates are configured in the sidebar.
+  Older CSV files without these columns default to the anticlockwise unit square:
+    P1\u2192(0,0)  P2\u2192(1,0)  P3\u2192(1,1)  P4\u2192(0,1)
+
+examples:
+  python3 ventrum.py
+  python3 ventrum.py --csv data/my_session.csv --show-row 0
+  python3 ventrum.py --show-row 1 --save-plot out.png
+""",
     )
     parser.add_argument(
         "--csv",
