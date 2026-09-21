@@ -135,6 +135,4 @@ Running `ventrum.py` automatically generates a companion file `<input_csv>_calc.
 - `P10_perp_distance`: Calibrated perpendicular drop from point P10 to baseline P8–P9.
 
 Calibration grid coordinates (`P1_grid_x/y` .. `P4_grid_x/y`) are read automatically
-from the CSV export and used to reconstruct the correct homography. Older CSV files
-without these columns fall back to the default anticlockwise unit square.
-
+from the CSV export and used to reconstruct the correct homography.
