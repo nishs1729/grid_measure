@@ -53,10 +53,22 @@ Right-click `index.html` and select **"Live Preview: Show Preview"** (or **"Open
 3. **Set Physical Units**: Under **Calibration** in the right sidebar, enter your grid unit size (e.g. `10` for 10 mm) to see measurements in physical units (`mm`).
 4. **Place Measurement Points (P5+)**: Click any feature to add measurement points. Consecutive points (`P5–P6`, `P7–P8`, etc.) automatically compute distances.
 5. **Interactive Controls**:
-   - **Magnifier**: Floating zoom loupe with crosshair for sub-pixel precision.
+   - **Magnifier Loupe**: Hover over the canvas to activate the zoom loupe. Displays a 4× magnified view with a **gap crosshair** (arms leave a clear gap around the center) and a **center dot** marking the exact sampled pixel. The crosshair uses a dark outline for visibility on both white and dark image backgrounds. Press **`Z`** or click the **Zoom** button (top-right of canvas) to toggle the loupe on/off.
    - **Drag to Reposition**: Drag any existing point to adjust it; moving P1–P4 instantly recalculates all measurements.
    - **Delete / Reset**: Click the **×** button on the latest point or use **Delete Last**; click **Reset Points** to clear the image.
 6. **Export**: Click **Export CSV** to download data, or **Append to CSV** to merge with an existing file.
+
+---
+
+## Keyboard Shortcuts
+
+| Key | Action |
+| :--- | :--- |
+| **Left Click** | Place calibration or measurement point |
+| **Drag point** | Reposition point; recalculates in real time |
+| **Hover canvas** | Show magnifier zoom loupe |
+| **`Z`** | Toggle zoom loupe on / off |
+| **`Esc`** | Close the instructions panel |
 
 ---
 

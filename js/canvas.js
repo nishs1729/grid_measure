@@ -246,6 +246,7 @@ function onMouseUp(e, onUpdate) {
 let magnifierEl = null;
 let magnifierCanvas = null;
 let magnifierCtx = null;
+let magnifierEnabled = true;
 
 export function initMagnifier() {
   magnifierEl = document.getElementById('magnifier');
@@ -255,10 +256,33 @@ export function initMagnifier() {
   const size = 130;
   magnifierCanvas.width = size;
   magnifierCanvas.height = size;
+
+  // Wire up toggle button
+  const toggleBtn = document.getElementById('magnifier-toggle');
+  if (toggleBtn) {
+    const syncBtn = () => toggleBtn.classList.toggle('active', magnifierEnabled);
+    syncBtn();
+    toggleBtn.addEventListener('click', () => {
+      magnifierEnabled = !magnifierEnabled;
+      if (!magnifierEnabled) hideMagnifier();
+      syncBtn();
+    });
+  }
+
+  // 'Z' keyboard shortcut
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'z' || e.key === 'Z') {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      magnifierEnabled = !magnifierEnabled;
+      if (!magnifierEnabled) hideMagnifier();
+      const btn = document.getElementById('magnifier-toggle');
+      if (btn) btn.classList.toggle('active', magnifierEnabled);
+    }
+  });
 }
 
 function showMagnifier(e, img, px, py) {
-  if (!magnifierEl || !magnifierCtx || !currentFit) return;
+  if (!magnifierEl || !magnifierCtx || !currentFit || !magnifierEnabled) return;
 
   const zoom = 4;
   const size = 130;
@@ -289,15 +313,45 @@ function showMagnifier(e, img, px, py) {
 
   magnifierCtx.restore();
 
-  // Draw crosshair
-  magnifierCtx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+  // Draw gap crosshair (lines stop short of center) with outline for contrast
+  const gap = 5; // gap radius around the center dot
+  const arm = 15; // how far the lines extend from center
+
+  const drawCrosshairLines = () => {
+    magnifierCtx.beginPath();
+    // Left arm
+    magnifierCtx.moveTo(half - arm, half);
+    magnifierCtx.lineTo(half - gap, half);
+    // Right arm
+    magnifierCtx.moveTo(half + gap, half);
+    magnifierCtx.lineTo(half + arm, half);
+    // Top arm
+    magnifierCtx.moveTo(half, half - arm);
+    magnifierCtx.lineTo(half, half - gap);
+    // Bottom arm
+    magnifierCtx.moveTo(half, half + gap);
+    magnifierCtx.lineTo(half, half + arm);
+    magnifierCtx.stroke();
+  };
+
+  // Dark outline
+  magnifierCtx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+  magnifierCtx.lineWidth = 3;
+  drawCrosshairLines();
+  // White core
+  magnifierCtx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
   magnifierCtx.lineWidth = 1;
+  drawCrosshairLines();
+
+  // Center dot — dark ring then white fill
   magnifierCtx.beginPath();
-  magnifierCtx.moveTo(half - 15, half);
-  magnifierCtx.lineTo(half + 15, half);
-  magnifierCtx.moveTo(half, half - 15);
-  magnifierCtx.lineTo(half, half + 15);
-  magnifierCtx.stroke();
+  magnifierCtx.arc(half, half, 2.5, 0, Math.PI * 2);
+  magnifierCtx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+  magnifierCtx.fill();
+  magnifierCtx.beginPath();
+  magnifierCtx.arc(half, half, 1.5, 0, Math.PI * 2);
+  magnifierCtx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+  magnifierCtx.fill();
 
   // Draw circle border
   magnifierCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';

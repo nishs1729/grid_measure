@@ -51,6 +51,15 @@
         <div id="magnifier" class="magnifier">
           <canvas id="magnifier-canvas"></canvas>
         </div>
+        <button id="magnifier-toggle" class="magnifier-toggle" title="Toggle zoom loupe (Z)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="10.5" y1="10.5" x2="14.5" y2="14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="6.5" y1="4.5" x2="6.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="4.5" y1="6.5" x2="8.5" y2="6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span>Zoom</span>
+        </button>
       </div>
     </section>
 
@@ -282,7 +291,8 @@
                   <h4>Interactive Adjustments & Controls</h4>
                 </div>
                 <ul class="step-subpoints">
-                  <li><strong>Magnifier Loupe:</strong> Hover over the canvas to activate the zoom loupe with crosshairs for sub-pixel precision.</li>
+                  <li><strong>Magnifier Loupe:</strong> Hover over the canvas to activate the zoom loupe. The loupe shows a 4× magnified view with a gap crosshair (lines with a center gap) and a center dot for sub-pixel precision. The crosshair uses a dark outline so it remains visible against both white and dark backgrounds.</li>
+                  <li><strong>Toggle Zoom Loupe:</strong> Press <kbd>Z</kbd> or click the <strong>Zoom</strong> button (top-right of canvas) to enable or disable the magnifier. Useful when the loupe obstructs your view of the canvas.</li>
                   <li><strong>Drag to Reposition:</strong> Click and drag any point to fine-tune its position. Moving P1–P4 instantly recalculates the entire calibration and all downstream measurements.</li>
                   <li><strong>Delete / Reset:</strong> Click the <strong>&times;</strong> button on any point, use <strong>Delete Last</strong> to pop the newest point, or click <strong>Reset Points</strong> to clear the image.</li>
                 </ul>
@@ -379,7 +389,11 @@
             </div>
             <div class="shortcut-item">
               <span class="shortcut-key">Hover Canvas</span>
-              <span class="shortcut-desc">Activate magnifier zoom loupe with crosshair</span>
+              <span class="shortcut-desc">Activate magnifier zoom loupe (gap crosshair + center dot)</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">Z</span>
+              <span class="shortcut-desc">Toggle zoom loupe on / off</span>
             </div>
             <div class="shortcut-item">
               <span class="shortcut-key">Esc</span>
