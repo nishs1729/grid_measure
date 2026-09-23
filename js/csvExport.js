@@ -118,8 +118,8 @@ function buildRow(img, header) {
   // P1–P4 pixel coordinates
   for (let i = 0; i < 4 && i < img.points.length; i++) {
     const pt = img.points[i];
-    values[`P${i + 1}_pixel_x`] = pt.pixelX.toFixed(1);
-    values[`P${i + 1}_pixel_y`] = pt.pixelY.toFixed(1);
+    values[`P${i + 1}_pixel_x`] = pt.pixelX.toFixed(2);
+    values[`P${i + 1}_pixel_y`] = pt.pixelY.toFixed(2);
   }
 
   // P1–P4 grid destinations from state.calibDst

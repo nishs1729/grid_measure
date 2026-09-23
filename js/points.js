@@ -100,6 +100,7 @@ export function deleteLastPoint() {
   if (!img || img.points.length === 0) return;
 
   img.points.pop();
+  if (state.selectedPointIndex >= img.points.length) state.selectedPointIndex = -1;
 
   // If we now have fewer than 4 points, clear calibration
   if (img.points.length < 4) {
@@ -125,6 +126,7 @@ export function resetPoints() {
   if (!img) return;
   img.points = [];
   img.calibration.homography = null;
+  state.selectedPointIndex = -1;
 }
 
 /**
@@ -194,6 +196,8 @@ export function getStatusMessage() {
   if (!img) return 'Load an image to begin';
 
   const n = img.points.length;
+  const sel = img.points[state.selectedPointIndex];
+  if (sel) return `${sel.label} selected — arrows nudge 0.1 px (Shift 1 px, Alt 10 px) · Esc to deselect`;
   if (n === 0) return 'Click P1 — first calibration point (grid origin)';
   if (n === 1) return 'Click P2 — second calibration point (1,0)';
   if (n === 2) return 'Click P3 — third calibration point (1,1)';

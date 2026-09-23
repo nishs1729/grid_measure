@@ -7,6 +7,9 @@
 
 let _nextId = 1;
 
+/** Allowed loupe magnifications */
+export const MAGNIFIER_ZOOM_STEPS = [2, 4, 8, 16];
+
 const state = {
   /** @type {Array<ImageState>} */
   images: [],
@@ -19,10 +22,19 @@ const state = {
     active: false,
     pointIndex: -1,
     imageId: null,
+    /** Press on a point that hasn't moved past the drag threshold yet:
+     *  { pointIndex, startCx, startCy, pointerId } or null */
+    pending: null,
   },
 
   /** Index of point hovered in sidebar or on canvas (-1 = none) */
   hoveredPointIndex: -1,
+
+  /** Index of the selected point in the current image, target of arrow-key nudges (-1 = none) */
+  selectedPointIndex: -1,
+
+  /** Loupe magnification relative to the screen; one of MAGNIFIER_ZOOM_STEPS */
+  magnifierZoom: 4,
 
   /** Grid unit size in physical units (e.g., mm). null = not set */
   gridUnitSize: null,
@@ -63,6 +75,7 @@ const state = {
  * @property {string} thumbnailDataUrl
  * @property {Array<PointData>} points
  * @property {{ homography: Float64Array|null }} calibration
+ * @property {import('./coordinates.js').View|null} view — zoom/pan; null until first shown
  */
 
 /**
@@ -79,6 +92,7 @@ export function createImageState(file, imageElement, thumbnailDataUrl) {
     thumbnailDataUrl,
     points: [],
     calibration: { homography: null },
+    view: null,
   };
 }
 
@@ -93,13 +107,16 @@ export function removeImage(id) {
   state.images = state.images.filter((img) => img.id !== id);
   if (state.selectedImageId === id) {
     state.selectedImageId = state.images.length > 0 ? state.images[0].id : null;
+    state.selectedPointIndex = -1;
   }
 }
 
 export function selectImage(id) {
   state.selectedImageId = id;
   state.hoveredPointIndex = -1;
+  state.selectedPointIndex = -1;
   state.drag.active = false;
+  state.drag.pending = null;
 }
 
 /**

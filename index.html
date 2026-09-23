@@ -52,15 +52,24 @@
         <div id="magnifier" class="magnifier">
           <canvas id="magnifier-canvas"></canvas>
         </div>
-        <button id="magnifier-toggle" class="magnifier-toggle" title="Toggle zoom loupe (Z)">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="10.5" y1="10.5" x2="14.5" y2="14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <line x1="6.5" y1="4.5" x2="6.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <line x1="4.5" y1="6.5" x2="8.5" y2="6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          <span>Zoom</span>
-        </button>
+        <div class="canvas-toolbar">
+          <button id="fit-view-btn" class="canvas-tool-btn" title="Fit image to window (0 / F). Ctrl+scroll to zoom; scroll, Shift+scroll, Space+drag or middle-drag to pan">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Fit</span>
+            <span id="zoom-level" class="zoom-level"></span>
+          </button>
+          <button id="magnifier-toggle" class="magnifier-toggle canvas-tool-btn" title="Toggle zoom loupe (Z). + / − or Alt+scroll changes its magnification">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="10.5" y1="10.5" x2="14.5" y2="14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="6.5" y1="4.5" x2="6.5" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="4.5" y1="6.5" x2="8.5" y2="6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span>Zoom</span>
+          </button>
+        </div>
       </div>
     </section>
 
@@ -299,9 +308,12 @@
                   <h4>Interactive Adjustments & Controls</h4>
                 </div>
                 <ul class="step-subpoints">
-                  <li><strong>Magnifier Loupe:</strong> Hover over the canvas to activate the zoom loupe. The loupe shows a 4× magnified view with a gap crosshair (lines with a center gap) and a center dot for sub-pixel precision. The crosshair uses a dark outline so it remains visible against both white and dark backgrounds.</li>
+                  <li><strong>Zoom &amp; Pan:</strong> <kbd>Ctrl</kbd>+scroll (or a trackpad pinch) zooms around the cursor. Scroll moves the image vertically and <kbd>Shift</kbd>+scroll horizontally. You can also hold <kbd>Space</kbd> and drag, or drag with the middle mouse button, to pan. On touch screens, pinch to zoom and drag an empty area to pan. Scrolling stops at the image edges. Press <kbd>0</kbd>/<kbd>F</kbd> or click <strong>Fit</strong> to fit the image to the window.</li>
+                  <li><strong>Magnifier Loupe:</strong> Off by default. Turn it on with <kbd>Z</kbd> or the <strong>Zoom</strong> button, then hover over the canvas. The loupe shows a magnified view (2×–16×, shown at its bottom) with a gap crosshair (lines with a center gap) and a center dot for sub-pixel precision. Change the magnification with <kbd>+</kbd>/<kbd>-</kbd> or <kbd>Alt</kbd>+scroll. The crosshair uses a dark outline so it remains visible against both white and dark backgrounds.</li>
                   <li><strong>Toggle Zoom Loupe:</strong> Press <kbd>Z</kbd> or click the <strong>Zoom</strong> button (top-right of canvas) to enable or disable the magnifier. Useful when the loupe obstructs your view of the canvas.</li>
                   <li><strong>Drag to Reposition:</strong> Click and drag any point to fine-tune its position. Moving P1–P4 instantly recalculates the entire calibration and all downstream measurements.</li>
+                  <li><strong>Select &amp; Nudge:</strong> Click a point (or its row in the sidebar) to select it. Arrow keys move it by 0.1 px, <kbd>Shift</kbd>+arrow by 1 px, <kbd>Alt</kbd>+arrow by 10 px. <kbd>Esc</kbd> deselects.</li>
+                  <li><strong>Touch Screens:</strong> Tap to place and press-and-drag to move points; the loupe shows above your finger.</li>
                   <li><strong>Delete / Reset:</strong> Click the <strong>&times;</strong> button on any point, use <strong>Delete Last</strong> to pop the newest point, or click <strong>Reset Points</strong> to clear the image.</li>
                 </ul>
               </div>
@@ -396,8 +408,36 @@
               <span class="shortcut-desc">Reposition point & recalculate in real time</span>
             </div>
             <div class="shortcut-item">
+              <span class="shortcut-key">Click Point</span>
+              <span class="shortcut-desc">Select it for nudging</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">Arrow Keys</span>
+              <span class="shortcut-desc">Nudge selected point 0.1 px (Shift 1 px, Alt 10 px)</span>
+            </div>
+            <div class="shortcut-item">
               <span class="shortcut-key">Hover Canvas</span>
-              <span class="shortcut-desc">Activate magnifier zoom loupe (gap crosshair + center dot)</span>
+              <span class="shortcut-desc">Show magnifier loupe when on (gap crosshair + center dot)</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">Scroll / Shift+Scroll</span>
+              <span class="shortcut-desc">Scroll the image vertically / horizontally</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">Ctrl+Scroll</span>
+              <span class="shortcut-desc">Zoom around the cursor</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">Space + Drag</span>
+              <span class="shortcut-desc">Pan (or drag with the middle button)</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">0 / F</span>
+              <span class="shortcut-desc">Fit image to window</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">+ / −</span>
+              <span class="shortcut-desc">Loupe magnification (or Alt+scroll)</span>
             </div>
             <div class="shortcut-item">
               <span class="shortcut-key">Z</span>
@@ -425,7 +465,7 @@
             </div>
             <div class="shortcut-item">
               <span class="shortcut-key">Esc</span>
-              <span class="shortcut-desc">Close this instructions panel</span>
+              <span class="shortcut-desc">Deselect point / close this panel</span>
             </div>
           </div>
         </section>

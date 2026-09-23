@@ -125,9 +125,11 @@ export function renderSidebar(onUpdate) {
     const isCalib = i < 4;
     const isLast = i === img.points.length - 1;
     const isHovered = i === state.hoveredPointIndex;
+    const isSelected = i === state.selectedPointIndex;
 
     const row = document.createElement('div');
-    row.className = `point-row ${isHovered ? 'hovered' : ''} ${isCalib ? 'calibration' : 'measurement'}`;
+    row.className = `point-row ${isHovered ? 'hovered' : ''} ${isSelected ? 'selected' : ''} ${isCalib ? 'calibration' : 'measurement'}`;
+    row.title = 'Click to select; arrow keys nudge the selected point';
     row.dataset.pointIndex = i;
 
     let gridText = '';
@@ -155,6 +157,12 @@ export function renderSidebar(onUpdate) {
     });
     row.addEventListener('mouseleave', () => {
       state.hoveredPointIndex = -1;
+      onUpdate(true);
+    });
+
+    // Click to select (arrow keys then nudge it)
+    row.addEventListener('click', () => {
+      state.selectedPointIndex = i;
       onUpdate(true);
     });
 

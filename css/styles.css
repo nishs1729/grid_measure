@@ -386,6 +386,7 @@ html, body {
   width: 100%;
   height: 100%;
   cursor: crosshair;
+  touch-action: none; /* touches place/drag points instead of scrolling the page */
   position: relative;
   z-index: 1;
 }
@@ -411,12 +412,17 @@ html, body {
   height: 130px;
 }
 
-/* ===== Magnifier Toggle Button ===== */
-.magnifier-toggle {
+/* ===== Canvas toolbar (Fit / Zoom loupe) ===== */
+.canvas-toolbar {
   position: absolute;
   top: 12px;
   right: 12px;
   z-index: 30;
+  display: flex;
+  gap: 6px;
+}
+
+.canvas-tool-btn {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -433,7 +439,7 @@ html, body {
   transition: color 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
-.magnifier-toggle:hover {
+.canvas-tool-btn:hover {
   background: rgba(30, 30, 45, 0.85);
   color: rgba(255, 255, 255, 0.85);
   border-color: rgba(255, 255, 255, 0.2);
@@ -445,8 +451,18 @@ html, body {
   box-shadow: 0 0 0 1px rgba(108, 138, 255, 0.2);
 }
 
-.magnifier-toggle svg {
+.canvas-tool-btn svg {
   flex-shrink: 0;
+}
+
+.zoom-level {
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+}
+
+.zoom-level:empty {
+  display: none;
 }
 
 
@@ -510,11 +526,17 @@ html, body {
   font-size: 11px;
   transition: background 0.1s;
   position: relative;
+  cursor: pointer;
 }
 
 .point-row:hover,
 .point-row.hovered {
   background: var(--bg-hover);
+}
+
+.point-row.selected {
+  background: var(--accent-dim);
+  box-shadow: inset 2px 0 0 var(--accent);
 }
 
 .point-color {
