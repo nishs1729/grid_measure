@@ -42,8 +42,9 @@ Right-click `index.html` and select **"Live Preview: Show Preview"** (or **"Open
 
 1. **Load Images**: Click **Add Images** (supports PNG, JPEG, WebP, TIFF). Thumbnails show status:
    - *No border*: 0 points.
-   - *Yellow border*: 1–4 points (calibrating).
-   - *Green border*: 5+ points (calibrated & measured).
+   - *Yellow border*: 1–4 points (calibrating, or calibrated with no measurements yet).
+   - *Green border*: 5+ points and calibration succeeded (calibrated & measured).
+   - *Red border*: 4+ points but calibration failed (e.g. three calibration points in a line) — reposition P1–P4.
 2. **Calibrate Grid (P1–P4)**: Click the 4 corners of one known grid square in order:
    - **P1** $\to (0,0)$ (origin)
    - **P2** $\to (1,0)$ (one unit along X)
@@ -57,6 +58,7 @@ Right-click `index.html` and select **"Live Preview: Show Preview"** (or **"Open
    - **Drag to Reposition**: Drag any existing point to adjust it; moving P1–P4 instantly recalculates all measurements.
    - **Delete / Reset**: Click the **×** button on the latest point or use **Delete Last**; click **Reset Points** to clear the image.
 6. **Export**: Click **Export CSV** to download data, or **Append to CSV** to merge with an existing file.
+   Files are named with a local timestamp: `gridmeasure_YYYY-MM-DD_HHMMSS.csv` for a new export, and `<original>_updated_YYYY-MM-DD_HHMMSS.csv` when appending (an earlier `_updated_…` suffix is replaced, not stacked).
 
 ---
 

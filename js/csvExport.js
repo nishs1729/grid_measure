@@ -140,6 +140,17 @@ function downloadString(content, filename, mimeType = 'text/csv') {
 }
 
 /**
+ * Local time as YYYY-MM-DD_HHMMSS (no colons, so it is safe in file names on every OS).
+ */
+function timestamp(date = new Date()) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}_` +
+    `${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`
+  );
+}
+
+/**
  * Export all current images as a new CSV.
  */
 function exportNewCsv() {
@@ -155,7 +166,7 @@ function exportNewCsv() {
   const header = buildHeader(maxMeas);
   const rows = exportable.map((img) => buildRow(img, header.length));
   const csv = rowsToCsv(header, rows);
-  downloadString(csv, 'gridmeasure_export.csv');
+  downloadString(csv, `gridmeasure_${timestamp()}.csv`);
 }
 
 /**
@@ -238,7 +249,9 @@ async function appendToCsv(file) {
 
   const csv = rowsToCsv(mergedHeader, [...paddedExisting, ...newRows]);
 
-  // Generate filename
-  const baseName = file.name.replace(/\.csv$/i, '');
-  downloadString(csv, `${baseName}_updated.csv`);
+  // Generate filename; strip a previous _updated[_<timestamp>] suffix so names don't pile up
+  const baseName = file.name
+    .replace(/\.csv$/i, '')
+    .replace(/_updated(_\d{4}-\d{2}-\d{2}_\d{6})?$/, '');
+  downloadString(csv, `${baseName}_updated_${timestamp()}.csv`);
 }

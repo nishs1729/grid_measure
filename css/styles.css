@@ -251,6 +251,9 @@ html, body {
 .thumb-item.border-green {
   border-color: var(--success);
 }
+.thumb-item.border-red {
+  border-color: var(--danger);
+}
 
 .thumb-img-wrapper {
   position: relative;
@@ -980,6 +983,12 @@ html, body {
   background: rgba(68, 221, 136, 0.12);
   border: 1px solid rgba(68, 221, 136, 0.35);
   color: var(--success);
+}
+
+.status-pill.status-failed {
+  background: var(--danger-bg);
+  border: 1px solid rgba(255, 85, 102, 0.35);
+  color: var(--danger);
 }
 
 /* Calibration Order Visual Diagram */

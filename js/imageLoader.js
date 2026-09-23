@@ -89,26 +89,47 @@ export function renderImageList(onUpdate) {
   for (const img of state.images) {
     const isSelected = img.id === state.selectedImageId;
     const pointCount = img.points.length;
+    const calibrated = img.calibration.homography != null;
 
-    // Determine border color based on point count
+    // Determine border color from calibration status
     let borderClass = '';
-    if (pointCount >= 5) borderClass = 'border-green';
+    if (pointCount >= 4 && !calibrated) borderClass = 'border-red';
+    else if (pointCount >= 5) borderClass = 'border-green';
     else if (pointCount >= 1) borderClass = 'border-yellow';
 
     const item = document.createElement('div');
     item.className = `thumb-item ${isSelected ? 'selected' : ''} ${borderClass}`;
     item.dataset.imageId = img.id;
 
-    item.innerHTML = `
-      <div class="thumb-img-wrapper">
-        <img src="${img.thumbnailDataUrl}" alt="${img.name}" />
-        <button class="thumb-delete" title="Remove image">&times;</button>
-      </div>
-      <div class="thumb-info">
-        <span class="thumb-name" title="${img.name}">${truncateName(img.name, 18)}</span>
-        <span class="thumb-count">${pointCount} pt${pointCount !== 1 ? 's' : ''}</span>
-      </div>
-    `;
+    // Built with DOM APIs (not innerHTML) so file names are never parsed as HTML
+    const imgWrapper = document.createElement('div');
+    imgWrapper.className = 'thumb-img-wrapper';
+
+    const thumbImg = document.createElement('img');
+    thumbImg.setAttribute('src', img.thumbnailDataUrl);
+    thumbImg.setAttribute('alt', img.name);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'thumb-delete';
+    delBtn.setAttribute('title', 'Remove image');
+    delBtn.textContent = '×';
+
+    imgWrapper.append(thumbImg, delBtn);
+
+    const info = document.createElement('div');
+    info.className = 'thumb-info';
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'thumb-name';
+    nameEl.setAttribute('title', img.name);
+    nameEl.textContent = truncateName(img.name, 18);
+
+    const countEl = document.createElement('span');
+    countEl.className = 'thumb-count';
+    countEl.textContent = `${pointCount} pt${pointCount !== 1 ? 's' : ''}`;
+
+    info.append(nameEl, countEl);
+    item.append(imgWrapper, info);
 
     // Select image on click
     item.addEventListener('click', (e) => {
@@ -118,7 +139,6 @@ export function renderImageList(onUpdate) {
     });
 
     // Delete image
-    const delBtn = item.querySelector('.thumb-delete');
     delBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (confirm(`Remove "${img.name}" and its point data?`)) {
