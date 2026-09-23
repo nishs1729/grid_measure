@@ -5,6 +5,7 @@
 import state, { getSelectedImage } from './state.js';
 import { getPointColor, getStatusMessage, deleteLastPoint, resetPoints, recalibrate } from './points.js';
 import { loadSetting, saveSetting } from './util.js';
+import { openInstructions } from './instructions.js';
 
 /**
  * Initialize sidebar event handlers.
@@ -301,7 +302,15 @@ function renderCalibrationDiagnostics(img, container) {
 
   const note = document.createElement('p');
   note.className = 'diag-note';
-  note.textContent = 'Assumes a flat grid; lens distortion is not corrected. See README → Limitations.';
+  note.textContent = 'Assumes a flat grid; lens distortion is not corrected. ';
+  const link = document.createElement('a');
+  link.href = '#';
+  link.textContent = 'Limitations & accuracy tips';
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    openInstructions('accuracy');
+  });
+  note.appendChild(link);
   container.appendChild(note);
 }
 

@@ -89,9 +89,9 @@ Right-click `index.html` and select **"Live Preview: Show Preview"** (or **"Open
 | **`Delete`** / **`Backspace`** | Delete the last point |
 | **`R`** | Reset all points on this image (asks to confirm) |
 | **`Ctrl/Cmd+V`** | Paste an image from the clipboard |
-| **`Esc`** | Deselect the point, or close the instructions panel |
+| **`Esc`** | Deselect the point, or close the user guide |
 
-Shortcuts are ignored while typing in a sidebar field and while the instructions panel is open.
+Shortcuts are ignored while typing in a sidebar field and while the user guide is open. The guide (**Instructions** button, top-right) is organised into tabs: Getting Started, Calibrate, Measure, Check Accuracy, Export and Shortcuts.
 
 ---
 
