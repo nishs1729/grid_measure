@@ -40,6 +40,7 @@
           Add Images
         </button>
         <input type="file" id="file-input" multiple accept="image/png,image/jpeg,image/webp,image/tiff" hidden />
+        <div id="image-progress" class="image-progress" hidden></div>
       </div>
       <div id="image-list" class="image-list"></div>
     </aside>
@@ -93,7 +94,13 @@
         <div class="unit-input-row">
           <label for="grid-unit-size">Grid unit size:</label>
           <input type="number" id="grid-unit-size" min="0" step="any" placeholder="e.g. 10" />
-          <span class="unit-label">mm</span>
+          <select id="grid-unit-label" class="unit-select" aria-label="Grid unit">
+            <option value="mm">mm</option>
+            <option value="cm">cm</option>
+            <option value="m">m</option>
+            <option value="µm">µm</option>
+            <option value="in">in</option>
+          </select>
         </div>
         <div class="calib-dst-section">
           <div class="calib-dst-heading">Grid coordinates (P1–P4)</div>
@@ -207,7 +214,7 @@
                 <div class="step-header">
                   <h4>Load Images</h4>
                 </div>
-                <p>Click <strong>Add Images</strong> in the left sidebar (supports PNG, JPEG, WebP, TIFF). Thumbnails show calibration status:</p>
+                <p>Click <strong>Add Images</strong> in the left sidebar, drag image files onto the canvas or image list, or paste an image with <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>V</kbd>. Supports PNG, JPEG and WebP (TIFF usually only in Safari). The count under the button shows how many images are calibrated. Thumbnails show calibration status:</p>
                 <div class="status-indicator-pills">
                   <span class="status-pill status-none">No border: 0 points</span>
                   <span class="status-pill status-calib">Yellow border: 1–4 points (calibrating)</span>
@@ -266,7 +273,7 @@
                   <h4>Set Physical Units</h4>
                 </div>
                 <p>
-                  Under <strong>Calibration</strong> in the right sidebar, enter your grid unit size (e.g. <code>10</code> for 10 mm grid spacing). All measurements will display converted physical units in millimeters (<code>mm</code>).
+                  Under <strong>Calibration</strong> in the right sidebar, enter your grid unit size (e.g. <code>10</code>) and choose its unit (<code>mm</code>, <code>cm</code>, <code>m</code>, <code>µm</code>, <code>in</code>). Both are remembered in this browser and included in the CSV export.
                 </p>
               </div>
             </div>
@@ -308,8 +315,8 @@
                   <h4>Export & Audit Data</h4>
                 </div>
                 <ul class="step-subpoints">
-                  <li><strong>Export CSV:</strong> Downloads a new CSV containing image metadata, pixel coordinates, calibrated positions, and calculated distances.</li>
-                  <li><strong>Append to CSV:</strong> Select an existing CSV file to append records from additional images, creating a consolidated dataset.</li>
+                  <li><strong>Export CSV:</strong> Downloads a new CSV containing image metadata, the grid unit size and unit, pixel coordinates, and calibrated positions. Only calibrated images are exported; you're asked to confirm if any are skipped.</li>
+                  <li><strong>Append to CSV:</strong> Select an existing CSV file to append records from additional images, creating a consolidated dataset. Columns are matched by name, so older exports merge correctly.</li>
                 </ul>
               </div>
             </div>
@@ -395,6 +402,26 @@
             <div class="shortcut-item">
               <span class="shortcut-key">Z</span>
               <span class="shortcut-desc">Toggle zoom loupe on / off</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">] / PgDn</span>
+              <span class="shortcut-desc">Next image</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">[ / PgUp</span>
+              <span class="shortcut-desc">Previous image</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">Del / Backspace</span>
+              <span class="shortcut-desc">Delete the last point</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">R</span>
+              <span class="shortcut-desc">Reset all points on this image</span>
+            </div>
+            <div class="shortcut-item">
+              <span class="shortcut-key">Ctrl/Cmd+V</span>
+              <span class="shortcut-desc">Paste an image from the clipboard</span>
             </div>
             <div class="shortcut-item">
               <span class="shortcut-key">Esc</span>

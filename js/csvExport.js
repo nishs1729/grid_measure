@@ -3,6 +3,7 @@
  */
 
 import state from './state.js';
+import { timestamp } from './util.js';
 
 /**
  * Initialize CSV export buttons.
@@ -31,13 +32,52 @@ export function initCsvExport(onUpdate) {
 }
 
 /**
- * Determine the maximum number of measurement points across all images.
+ * Split images into those that can be exported (calibration succeeded) and those skipped.
  */
-function getMaxMeasurementPoints() {
+function partitionImages() {
+  const exportable = state.images.filter((img) => img.calibration.homography != null);
+  const skipped = state.images.filter((img) => img.calibration.homography == null);
+  return { exportable, skipped };
+}
+
+/**
+ * Warn about images that will be left out. Returns false if the export should stop.
+ */
+function confirmExport(exportable, skipped) {
+  if (exportable.length === 0) {
+    alert('No images have a successful calibration (P1–P4). Calibrate at least one image to export.');
+    return false;
+  }
+  if (skipped.length === 0) return true;
+
+  const max = 10;
+  const names = skipped.slice(0, max).map((img) => img.name).join(', ');
+  const more = skipped.length > max ? ` and ${skipped.length - max} more` : '';
+  return confirm(
+    `${skipped.length} image(s) will be skipped (not calibrated): ${names}${more}.\n\nContinue?`
+  );
+}
+
+/**
+ * Maximum number of measurement points (P5+) across the given images.
+ */
+function getMaxMeasurementPoints(images) {
   let max = 0;
-  for (const img of state.images) {
+  for (const img of images) {
     const measCount = Math.max(0, img.points.length - 4);
     if (measCount > max) max = measCount;
+  }
+  return max;
+}
+
+/**
+ * Number of measurement points implied by an existing header (highest P<n>_grid_x, n ≥ 5).
+ */
+function measurementPointsInHeader(header) {
+  let max = 0;
+  for (const col of header) {
+    const m = /^P(\d+)_grid_x$/.exec(col);
+    if (m && Number(m[1]) >= 5) max = Math.max(max, Number(m[1]) - 4);
   }
   return max;
 }
@@ -50,15 +90,11 @@ function buildHeader(maxMeas) {
     'image',
     'image_width',
     'image_height',
-    'P1_pixel_x', 'P1_pixel_y',
-    'P2_pixel_x', 'P2_pixel_y',
-    'P3_pixel_x', 'P3_pixel_y',
-    'P4_pixel_x', 'P4_pixel_y',
-    'P1_grid_x', 'P1_grid_y',
-    'P2_grid_x', 'P2_grid_y',
-    'P3_grid_x', 'P3_grid_y',
-    'P4_grid_x', 'P4_grid_y',
+    'grid_unit_size',
+    'grid_unit',
   ];
+  for (let i = 1; i <= 4; i++) cols.push(`P${i}_pixel_x`, `P${i}_pixel_y`);
+  for (let i = 1; i <= 4; i++) cols.push(`P${i}_grid_x`, `P${i}_grid_y`);
   for (let i = 0; i < maxMeas; i++) {
     const pn = i + 5;
     cols.push(`P${pn}_grid_x`, `P${pn}_grid_y`);
@@ -67,39 +103,39 @@ function buildHeader(maxMeas) {
 }
 
 /**
- * Build a CSV row for a single image.
+ * Build a CSV row for a single image. Values are placed by column name, so the
+ * header order can change without breaking rows. Columns not in the header are dropped.
  */
-function buildRow(img, totalCols) {
-  const row = new Array(totalCols).fill('');
+function buildRow(img, header) {
+  const values = {
+    image: img.name,
+    image_width: img.width,
+    image_height: img.height,
+    grid_unit_size: state.gridUnitSize ?? '',
+    grid_unit: state.gridUnitLabel,
+  };
 
-  row[0] = img.name;
-  row[1] = img.width;
-  row[2] = img.height;
-
-  // P1-P4 pixel coordinates (cols 3-10)
+  // P1–P4 pixel coordinates
   for (let i = 0; i < 4 && i < img.points.length; i++) {
     const pt = img.points[i];
-    row[3 + i * 2] = pt.pixelX.toFixed(1);
-    row[3 + i * 2 + 1] = pt.pixelY.toFixed(1);
+    values[`P${i + 1}_pixel_x`] = pt.pixelX.toFixed(1);
+    values[`P${i + 1}_pixel_y`] = pt.pixelY.toFixed(1);
   }
 
-  // P1-P4 grid destinations from state.calibDst (cols 11-18)
+  // P1–P4 grid destinations from state.calibDst
   for (let i = 0; i < 4; i++) {
-    row[11 + i * 2] = state.calibDst[i].x;
-    row[11 + i * 2 + 1] = state.calibDst[i].y;
+    values[`P${i + 1}_grid_x`] = state.calibDst[i].x;
+    values[`P${i + 1}_grid_y`] = state.calibDst[i].y;
   }
 
-  // P5+ grid coordinates (cols 19+)
+  // P5+ grid coordinates
   for (let i = 4; i < img.points.length; i++) {
     const pt = img.points[i];
-    const colIdx = 19 + (i - 4) * 2;
-    if (colIdx < totalCols) {
-      row[colIdx] = pt.gridX != null ? pt.gridX.toFixed(4) : '';
-      row[colIdx + 1] = pt.gridY != null ? pt.gridY.toFixed(4) : '';
-    }
+    values[`P${i + 1}_grid_x`] = pt.gridX != null ? pt.gridX.toFixed(4) : '';
+    values[`P${i + 1}_grid_y`] = pt.gridY != null ? pt.gridY.toFixed(4) : '';
   }
 
-  return row;
+  return header.map((col) => values[col] ?? '');
 }
 
 /**
@@ -140,31 +176,14 @@ function downloadString(content, filename, mimeType = 'text/csv') {
 }
 
 /**
- * Local time as YYYY-MM-DD_HHMMSS (no colons, so it is safe in file names on every OS).
- */
-function timestamp(date = new Date()) {
-  const pad = (n) => String(n).padStart(2, '0');
-  return (
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}_` +
-    `${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`
-  );
-}
-
-/**
- * Export all current images as a new CSV.
+ * Export all calibrated images as a new CSV.
  */
 function exportNewCsv() {
-  // Only export images that have at least P1-P4
-  const exportable = state.images.filter((img) => img.points.length >= 4);
+  const { exportable, skipped } = partitionImages();
+  if (!confirmExport(exportable, skipped)) return;
 
-  if (exportable.length === 0) {
-    alert('No images have complete calibration (P1–P4). Add at least 4 points to export.');
-    return;
-  }
-
-  const maxMeas = getMaxMeasurementPoints();
-  const header = buildHeader(maxMeas);
-  const rows = exportable.map((img) => buildRow(img, header.length));
+  const header = buildHeader(getMaxMeasurementPoints(exportable));
+  const rows = exportable.map((img) => buildRow(img, header));
   const csv = rowsToCsv(header, rows);
   downloadString(csv, `gridmeasure_${timestamp()}.csv`);
 }
@@ -215,39 +234,38 @@ function parseCsv(text) {
 
 /**
  * Append current image data to an existing CSV file.
+ *
+ * Existing rows are re-mapped into the merged header by column name, so files written
+ * before columns were added (e.g. grid_unit_size / grid_unit) line up correctly;
+ * columns the old file lacks are left blank.
  */
 async function appendToCsv(file) {
   const text = await file.text();
   const existing = parseCsv(text);
 
-  const exportable = state.images.filter((img) => img.points.length >= 4);
-  if (exportable.length === 0) {
-    alert('No images have complete calibration (P1–P4).');
+  if (existing.header.length > 0 && !(existing.header.includes('image') && existing.header.includes('P1_pixel_x'))) {
+    alert(`"${file.name}" doesn't look like a GridMeasure CSV (missing "image" / "P1_pixel_x" columns). Nothing was exported.`);
     return;
   }
 
-  // Determine required header width
-  const maxMeasNew = getMaxMeasurementPoints();
-  const newHeader = buildHeader(maxMeasNew);
+  const { exportable, skipped } = partitionImages();
+  if (!confirmExport(exportable, skipped)) return;
 
-  // Merge headers: take the wider one
-  let mergedHeader;
-  if (existing.header.length >= newHeader.length) {
-    mergedHeader = existing.header;
-  } else {
-    mergedHeader = newHeader;
+  // Merged header: standard columns wide enough for both old and new rows,
+  // plus any extra columns the existing file has, kept at the end
+  const maxMeas = Math.max(getMaxMeasurementPoints(exportable), measurementPointsInHeader(existing.header));
+  const mergedHeader = buildHeader(maxMeas);
+  for (const col of existing.header) {
+    if (!mergedHeader.includes(col)) mergedHeader.push(col);
   }
 
-  // Pad existing rows to new width
-  const paddedExisting = existing.rows.map((row) => {
-    while (row.length < mergedHeader.length) row.push('');
-    return row;
-  });
+  const existingIndex = new Map(existing.header.map((col, i) => [col, i]));
+  const remappedExisting = existing.rows.map((row) =>
+    mergedHeader.map((col) => (existingIndex.has(col) ? row[existingIndex.get(col)] ?? '' : ''))
+  );
 
-  // Build new rows
-  const newRows = exportable.map((img) => buildRow(img, mergedHeader.length));
-
-  const csv = rowsToCsv(mergedHeader, [...paddedExisting, ...newRows]);
+  const newRows = exportable.map((img) => buildRow(img, mergedHeader));
+  const csv = rowsToCsv(mergedHeader, [...remappedExisting, ...newRows]);
 
   // Generate filename; strip a previous _updated[_<timestamp>] suffix so names don't pile up
   const baseName = file.name

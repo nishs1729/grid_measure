@@ -40,7 +40,7 @@ Right-click `index.html` and select **"Live Preview: Show Preview"** (or **"Open
 
 ## How to Use
 
-1. **Load Images**: Click **Add Images** (supports PNG, JPEG, WebP, TIFF). Thumbnails show status:
+1. **Load Images**: Click **Add Images**, drag image files onto the canvas or the image list, or paste an image from the clipboard (**Ctrl/Cmd+V**). Supports PNG, JPEG and WebP; TIFF usually only decodes in Safari. Files that can't be decoded are listed in a notice at the bottom of the screen. Pasted images are named `pasted_<timestamp>_<n>.png`. The count under **Add Images** shows how many images are calibrated (e.g. `7/12 calibrated`). Thumbnails show status:
    - *No border*: 0 points.
    - *Yellow border*: 1–4 points (calibrating, or calibrated with no measurements yet).
    - *Green border*: 5+ points and calibration succeeded (calibrated & measured).
@@ -51,13 +51,14 @@ Right-click `index.html` and select **"Live Preview: Show Preview"** (or **"Open
    - **P3** $\to (1,1)$ (opposite corner)
    - **P4** $\to (0,1)$ (one unit along Y)
    *Placing P4 computes the homography and displays calibration diagnostics.*
-3. **Set Physical Units**: Under **Calibration** in the right sidebar, enter your grid unit size (e.g. `10` for 10 mm) to see measurements in physical units (`mm`).
+3. **Set Physical Units**: Under **Calibration** in the right sidebar, enter your grid unit size (e.g. `10`) and pick its unit (`mm`, `cm`, `m`, `µm`, `in`). Both are remembered in this browser and written to the export.
 4. **Place Measurement Points (P5+)**: Click any feature to add measurement points. Consecutive points (`P5–P6`, `P7–P8`, etc.) automatically compute distances.
 5. **Interactive Controls**:
    - **Magnifier Loupe**: Hover over the canvas to activate the zoom loupe. Displays a 4× magnified view with a **gap crosshair** (arms leave a clear gap around the center) and a **center dot** marking the exact sampled pixel. The crosshair uses a dark outline for visibility on both white and dark image backgrounds. Press **`Z`** or click the **Zoom** button (top-right of canvas) to toggle the loupe on/off.
    - **Drag to Reposition**: Drag any existing point to adjust it; moving P1–P4 instantly recalculates all measurements.
-   - **Delete / Reset**: Click the **×** button on the latest point or use **Delete Last**; click **Reset Points** to clear the image.
-6. **Export**: Click **Export CSV** to download data, or **Append to CSV** to merge with an existing file.
+   - **Delete / Reset**: Click the **×** button on the latest point, use **Delete Last**, or press **`Delete`**/**`Backspace`**; click **Reset Points** or press **`R`** to clear the image.
+   - **Switch Images**: Press **`]`**/**`PageDown`** for the next image and **`[`**/**`PageUp`** for the previous one.
+6. **Export**: Click **Export CSV** to download data, or **Append to CSV** to merge with an existing file. Only images whose calibration succeeded are exported; if any are left out, you're asked to confirm first, with the skipped images listed.
    Files are named with a local timestamp: `gridmeasure_YYYY-MM-DD_HHMMSS.csv` for a new export, and `<original>_updated_YYYY-MM-DD_HHMMSS.csv` when appending (an earlier `_updated_…` suffix is replaced, not stacked).
 
 ---
@@ -70,7 +71,14 @@ Right-click `index.html` and select **"Live Preview: Show Preview"** (or **"Open
 | **Drag point** | Reposition point; recalculates in real time |
 | **Hover canvas** | Show magnifier zoom loupe |
 | **`Z`** | Toggle zoom loupe on / off |
+| **`]`** / **`PageDown`** | Next image |
+| **`[`** / **`PageUp`** | Previous image |
+| **`Delete`** / **`Backspace`** | Delete the last point |
+| **`R`** | Reset all points on this image (asks to confirm) |
+| **`Ctrl/Cmd+V`** | Paste an image from the clipboard |
 | **`Esc`** | Close the instructions panel |
+
+Shortcuts are ignored while typing in a sidebar field and while the instructions panel is open.
 
 ---
 
@@ -92,8 +100,11 @@ Once P1–P4 are placed, the right sidebar displays 5 diagnostic cards to verify
 
 GridMeasure exports:
 - Image metadata (`image`, `image_width`, `image_height`).
+- Physical scale (`grid_unit_size`, `grid_unit`): the size and unit of one grid unit. `grid_unit_size` is empty if it wasn't set.
 - **Raw pixel coordinates** for calibration points `P1`–`P4`.
 - **Calibrated grid coordinates** for measurement points `P5+`.
+
+Columns are matched by name, so read them by name (not position) downstream. **Append to CSV** re-maps the existing file's rows by column name too: older exports without the unit columns get blanks there, and any extra columns you added are kept at the end. Files that don't have GridMeasure's `image` and `P1_pixel_x` columns are rejected.
 
 Because the 3x3 homography matrix $H$ is invertible, downstream scripts can analytically recalculate $H^{-1}$ and reconstruct the exact pixel locations on the original image, guaranteeing full scientific auditability.
 

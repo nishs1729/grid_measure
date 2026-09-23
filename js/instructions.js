@@ -2,6 +2,13 @@
  * instructions.js — Handles the Instructions & User Guide slide-out panel
  */
 
+/**
+ * True while the instructions panel is open (other shortcuts are suspended).
+ */
+export function isInstructionsOpen() {
+  return !!document.getElementById('instructions-modal')?.classList.contains('open');
+}
+
 export function initInstructions() {
   const openBtn = document.getElementById('instructions-btn');
   const modal = document.getElementById('instructions-modal');

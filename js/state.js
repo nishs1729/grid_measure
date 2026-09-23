@@ -102,6 +102,26 @@ export function selectImage(id) {
   state.drag.active = false;
 }
 
+/**
+ * Select the image `step` positions away from the current one (no wrap-around).
+ * @returns {boolean} — true if the selection changed
+ */
+function selectRelativeImage(step) {
+  const idx = state.images.findIndex((img) => img.id === state.selectedImageId);
+  const next = state.images[idx + step];
+  if (idx < 0 || !next) return false;
+  selectImage(next.id);
+  return true;
+}
+
+export function selectNextImage() {
+  return selectRelativeImage(1);
+}
+
+export function selectPrevImage() {
+  return selectRelativeImage(-1);
+}
+
 export function getSelectedImage() {
   return state.images.find((img) => img.id === state.selectedImageId) || null;
 }

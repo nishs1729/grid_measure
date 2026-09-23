@@ -214,6 +214,56 @@ html, body {
   border-color: var(--accent);
 }
 
+/* ===== Calibration progress (Left Sidebar) ===== */
+.image-progress {
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+}
+.image-progress.complete {
+  color: var(--success);
+}
+
+/* ===== Drag-and-drop highlight ===== */
+#canvas-wrapper.drop-active,
+#left-sidebar.drop-active {
+  outline: 2px dashed var(--accent);
+  outline-offset: -6px;
+  background: var(--accent-dim);
+}
+
+/* ===== On-screen notice ===== */
+.notice {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translate(-50%, 20px);
+  max-width: min(640px, calc(100vw - 32px));
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-left: 3px solid var(--accent);
+  color: var(--text-primary);
+  font-size: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 1000;
+  cursor: pointer;
+}
+.notice.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+.notice-error {
+  border-left-color: var(--danger);
+}
+
 /* ===== Image List (Left Sidebar) ===== */
 .image-list {
   flex: 1;
@@ -629,9 +679,21 @@ html, body {
   box-shadow: 0 0 0 2px var(--accent-dim);
 }
 
-.unit-label {
-  color: var(--text-muted);
+.unit-select {
+  padding: 4px 6px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: inherit;
   font-size: 12px;
+  cursor: pointer;
+}
+
+.unit-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim);
 }
 
 /* ===== Calibration Grid Destination Inputs ===== */

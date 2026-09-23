@@ -257,28 +257,26 @@ export function initMagnifier() {
   magnifierCanvas.width = size;
   magnifierCanvas.height = size;
 
-  // Wire up toggle button
+  // Wire up toggle button ('Z' shortcut lives in keyboard.js)
   const toggleBtn = document.getElementById('magnifier-toggle');
   if (toggleBtn) {
-    const syncBtn = () => toggleBtn.classList.toggle('active', magnifierEnabled);
-    syncBtn();
-    toggleBtn.addEventListener('click', () => {
-      magnifierEnabled = !magnifierEnabled;
-      if (!magnifierEnabled) hideMagnifier();
-      syncBtn();
-    });
+    syncMagnifierButton();
+    toggleBtn.addEventListener('click', toggleMagnifier);
   }
+}
 
-  // 'Z' keyboard shortcut
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'z' || e.key === 'Z') {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-      magnifierEnabled = !magnifierEnabled;
-      if (!magnifierEnabled) hideMagnifier();
-      const btn = document.getElementById('magnifier-toggle');
-      if (btn) btn.classList.toggle('active', magnifierEnabled);
-    }
-  });
+/**
+ * Toggle the magnifier loupe on/off (button and 'Z' key).
+ */
+export function toggleMagnifier() {
+  magnifierEnabled = !magnifierEnabled;
+  if (!magnifierEnabled) hideMagnifier();
+  syncMagnifierButton();
+}
+
+function syncMagnifierButton() {
+  const btn = document.getElementById('magnifier-toggle');
+  if (btn) btn.classList.toggle('active', magnifierEnabled);
 }
 
 function showMagnifier(e, img, px, py) {

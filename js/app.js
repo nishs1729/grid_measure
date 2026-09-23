@@ -8,6 +8,7 @@ import { initCanvas, renderCanvas, initMagnifier } from './canvas.js';
 import { initSidebar, renderSidebar } from './sidebar.js';
 import { initCsvExport } from './csvExport.js';
 import { initInstructions } from './instructions.js';
+import { initKeyboard } from './keyboard.js';
 
 /**
  * Full UI update callback.
@@ -28,6 +29,7 @@ function init() {
   initSidebar(onUpdate);
   initCsvExport(onUpdate);
   initInstructions();
+  initKeyboard(onUpdate);
 
   // Initial render
   onUpdate();

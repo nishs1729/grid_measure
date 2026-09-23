@@ -4,6 +4,7 @@
 
 import state, { getSelectedImage } from './state.js';
 import { getPointColor, getStatusMessage, deleteLastPoint, resetPoints, recalibrate } from './points.js';
+import { loadSetting, saveSetting } from './util.js';
 
 /**
  * Initialize sidebar event handlers.
@@ -19,20 +20,33 @@ export function initSidebar(onUpdate) {
     onUpdate();
   });
 
-  resetBtn.addEventListener('click', () => {
-    const img = getSelectedImage();
-    if (!img || img.points.length === 0) return;
-    if (confirm('Remove all points from this image?')) {
-      resetPoints();
-      onUpdate();
-    }
-  });
+  resetBtn.addEventListener('click', () => requestResetPoints(onUpdate));
 
-  // Grid unit size input
+  // Grid unit size input + unit menu (both remembered across reloads)
   const unitInput = document.getElementById('grid-unit-size');
+  const unitSelect = document.getElementById('grid-unit-label');
+
+  const savedSize = parseFloat(loadSetting('gridUnitSize'));
+  if (savedSize > 0) {
+    state.gridUnitSize = savedSize;
+    unitInput.value = savedSize;
+  }
+  const savedLabel = loadSetting('gridUnitLabel');
+  if (savedLabel && [...unitSelect.options].some((o) => o.value === savedLabel)) {
+    state.gridUnitLabel = savedLabel;
+  }
+  unitSelect.value = state.gridUnitLabel;
+
   unitInput.addEventListener('input', (e) => {
     const val = parseFloat(e.target.value);
     state.gridUnitSize = isNaN(val) || val <= 0 ? null : val;
+    saveSetting('gridUnitSize', state.gridUnitSize);
+    renderSidebar(onUpdate);
+  });
+
+  unitSelect.addEventListener('change', () => {
+    state.gridUnitLabel = unitSelect.value;
+    saveSetting('gridUnitLabel', state.gridUnitLabel);
     renderSidebar(onUpdate);
   });
 
@@ -59,6 +73,20 @@ export function initSidebar(onUpdate) {
 
     xInput.addEventListener('input', () => handler('x', xInput));
     yInput.addEventListener('input', () => handler('y', yInput));
+  }
+}
+
+/**
+ * Clear all points from the selected image after confirmation (button and 'R' key).
+ *
+ * @param {Function} onUpdate
+ */
+export function requestResetPoints(onUpdate) {
+  const img = getSelectedImage();
+  if (!img || img.points.length === 0) return;
+  if (confirm('Remove all points from this image?')) {
+    resetPoints();
+    onUpdate();
   }
 }
 
