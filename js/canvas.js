@@ -19,6 +19,7 @@ import {
 } from './coordinates.js';
 import { getPointColor, addPoint, findPointNear, movePoint } from './points.js';
 import { loadSetting, saveSetting } from './util.js';
+import { drawGridOverlay } from './gridOverlay.js';
 
 let canvas, ctx;
 let onUpdateCb = () => {};
@@ -98,6 +99,21 @@ export function initCanvas(onUpdate) {
   });
 
   document.getElementById('fit-view-btn')?.addEventListener('click', resetView);
+
+  const gridBtn = document.getElementById('grid-toggle');
+  if (gridBtn) {
+    gridBtn.classList.toggle('active', state.showGrid);
+    gridBtn.addEventListener('click', toggleGrid);
+  }
+}
+
+/**
+ * Toggle the fitted-grid overlay (button and 'G' key).
+ */
+export function toggleGrid() {
+  state.showGrid = !state.showGrid;
+  document.getElementById('grid-toggle')?.classList.toggle('active', state.showGrid);
+  renderCanvas();
 }
 
 // ---- Sizing ----
@@ -265,6 +281,9 @@ export function renderCanvas() {
       (y1 - y0) * view.scale
     );
   }
+
+  // Fitted grid (calibrated images only), under the points
+  drawGridOverlay(ctx, img, view);
 
   // Draw points
   for (let i = 0; i < img.points.length; i++) {

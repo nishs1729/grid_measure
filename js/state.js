@@ -36,6 +36,9 @@ const state = {
   /** Loupe magnification relative to the screen; one of MAGNIFIER_ZOOM_STEPS */
   magnifierZoom: 4,
 
+  /** Draw the fitted grid over calibrated images */
+  showGrid: true,
+
   /** Grid unit size in physical units (e.g., mm). null = not set */
   gridUnitSize: null,
 

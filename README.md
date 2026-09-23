@@ -57,6 +57,7 @@ Right-click `index.html` and select **"Live Preview: Show Preview"** (or **"Open
    - **Zoom & Pan**: **Ctrl**+scroll (or a trackpad pinch) zooms around the cursor (25%–3200%; `100%` = one screen pixel per image pixel). Scroll moves the image vertically and **Shift**+scroll horizontally, like a document; trackpads scroll in both directions. You can also pan by holding **Space** and dragging, dragging with the **middle mouse button**, or on touch screens by dragging on an empty area. Scrolling stops at the image edges (with a small margin); an image smaller than the canvas stays centred. Pinch with two fingers to zoom. Press **`0`** / **`F`** or click **Fit** (top-right of canvas, which also shows the current zoom) to fit the image to the window. Each image remembers its own zoom and position. From 400% up, image pixels are drawn as sharp squares so you can see exactly where a pixel boundary is.
    - **Magnifier Loupe**: Off by default — press **`Z`** or click the **Zoom** button (top-right of canvas) to turn it on, then hover over the canvas. Displays a magnified view (2×, 4×, 8× or 16× relative to the screen, shown at the bottom of the loupe) with a **gap crosshair** (arms leave a clear gap around the center) and a **center dot** marking the exact sampled pixel. The crosshair uses a dark outline for visibility on both white and dark image backgrounds. Change the magnification with **`+`** / **`-`** or **Alt**+scroll; it is remembered in this browser. Press **`Z`** or click **Zoom** again to turn the loupe off.
    - **Drag to Reposition**: Drag any existing point to adjust it; moving P1–P4 instantly recalculates all measurements. A press only becomes a drag after the pointer moves more than 3 screen pixels, so clicking a point never nudges it by accident.
+   - **Grid Overlay**: Once an image is calibrated, the fitted grid is drawn back onto it: cyan lines at every grid unit (every 10th stronger) and the calibration square P1–P4 in yellow. If calibration is good, the lines sit on the paper's grid across the whole sheet. When lines would be closer than 6 screen pixels, only every 2nd, 5th, 10th… line is drawn. Press **`G`** or click **Grid** (top-right of canvas) to hide or show it.
    - **Select & Nudge**: Click a point (on the canvas or its row in the sidebar) to select it; it gets a white ring. Arrow keys then move it by **0.1 px**, **Shift**+arrow by **1 px**, **Alt**+arrow by **10 px**. Press **`Esc`** or click an empty spot to deselect (clicking empty image area also adds a new point, as usual).
    - **Touch Screens**: Tap to place, press-and-drag to move points. The loupe appears above your finger (or beside it near the top edge) so the spot stays visible.
    - **Delete / Reset**: Click the **×** button on the latest point, use **Delete Last**, or press **`Delete`**/**`Backspace`**; click **Reset Points** or press **`R`** to clear the image.
@@ -80,6 +81,7 @@ Right-click `index.html` and select **"Live Preview: Show Preview"** (or **"Open
 | **Space + drag** / **middle-drag** | Pan the image |
 | **Pinch** / **drag empty area** (touch) | Zoom / pan the image |
 | **`0`** / **`F`** | Fit image to window |
+| **`G`** | Show / hide the fitted grid overlay |
 | **`Z`** | Toggle zoom loupe on / off |
 | **`+`** / **`-`** / **Alt+scroll** | Loupe magnification up / down (2×–16×) |
 | **`]`** / **`PageDown`** | Next image |
@@ -104,6 +106,24 @@ Once P1–P4 are placed, the right sidebar displays 5 diagnostic cards to verify
 | **Aspect Ratio** | Ratio of vertical to horizontal unit length ($\|P4-P1\| / \|P2-P1\|$). | `1.000` (`Square ✓`). Deviations indicate non-square pixels or angled tilt. |
 | **Corner Angle** | Angle between $P1 \to P2$ and $P1 \to P4$ vectors. | `90.0°` (`Orthogonal ✓`). Deviations show shear skew or perspective slant. |
 | **Perspective** | Projective magnitude of homography and keystone ratio ($\frac{\|P2-P1\|}{\|P3-P4\|}$). | *None* to *Strong*. Confirms that perspective foreshortening is being corrected. |
+
+The cards only describe the four calibration points. The **grid overlay** is the more direct check: it shows whether the fitted grid matches the real one everywhere on the image, not just at P1–P4.
+
+---
+
+## Limitations
+
+GridMeasure corrects tilt, rotation, scale and perspective with a single **homography**. That model is exact only for a flat plane seen through an ideal (distortion-free) lens, so:
+
+- **The grid and the object must lie on the same flat plane.** Anything raised above the paper (a thick specimen, a curled sheet) is measured as if it were on the paper; the error grows with the height and with how obliquely the photo was taken.
+- **Lens distortion is not corrected.** Barrel or pincushion distortion bends straight grid lines, which a homography can't represent. The error grows with distance from the calibration square and is worst near the edges of the frame.
+
+**Practical advice:**
+
+- Calibrate on a **large square** (e.g. a 10×10 block of grid cells, with the P1–P4 grid coordinates set to `(0,0)`, `(10,0)`, `(10,10)`, `(0,10)`); small errors in clicking the corners then matter much less.
+- Keep the object **inside or near** the calibration square.
+- Avoid wide-angle lenses and the edges of the frame; photograph from as square-on as practical.
+- **Check with the grid overlay.** Where its lines drift away from the paper's lines, measurements there are affected by distortion.
 
 ---
 

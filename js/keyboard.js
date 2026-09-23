@@ -9,7 +9,7 @@
 
 import state, { getSelectedImage, selectNextImage, selectPrevImage } from './state.js';
 import { deleteLastPoint, movePoint } from './points.js';
-import { toggleMagnifier, resetView, setPanKey, stepMagnifierZoom } from './canvas.js';
+import { toggleMagnifier, toggleGrid, resetView, setPanKey, stepMagnifierZoom } from './canvas.js';
 import { requestResetPoints } from './sidebar.js';
 import { isInstructionsOpen } from './instructions.js';
 import { isTypingTarget } from './util.js';
@@ -79,6 +79,10 @@ export function initKeyboard(onUpdate) {
       case 'z':
       case 'Z':
         toggleMagnifier();
+        break;
+      case 'g':
+      case 'G':
+        toggleGrid();
         break;
       default:
         return; // not ours — don't preventDefault

@@ -298,6 +298,11 @@ function renderCalibrationDiagnostics(img, container) {
   ));
 
   container.appendChild(grid);
+
+  const note = document.createElement('p');
+  note.className = 'diag-note';
+  note.textContent = 'Assumes a flat grid; lens distortion is not corrected. See README → Limitations.';
+  container.appendChild(note);
 }
 
 function makeDiagCard(title, value, detail) {
