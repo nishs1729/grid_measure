@@ -1,0 +1,16 @@
+{
+  "name": "grid-measure",
+  "private": true,
+  "description": "GridMeasure — browser tool for grid calibration and measurement. The app itself has no dependencies; these are for tests only.",
+  "type": "module",
+  "scripts": {
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "node --test \"tests/unit/**/*.test.js\"",
+    "test:e2e": "playwright test",
+    "test:fixtures": "python3 tests/fixtures/make_fixtures.py",
+    "serve": "python3 -m http.server 8000"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}

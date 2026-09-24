@@ -21,6 +21,7 @@ import {
 import { getPointColor, addPoint, findPointNear, movePoint } from './points.js';
 import { loadSetting, saveSetting } from './util.js';
 import { drawGridOverlay } from './gridOverlay.js';
+import { clampScale, zoomAt as zoomViewAt, constrainView as constrainViewTo, recenterOnResize, clampSegmentOffset } from './view.js';
 
 let canvas, ctx;
 let onUpdateCb = () => {};
@@ -36,18 +37,10 @@ const DRAG_THRESHOLD = 3;
 /** Hit radius (CSS px) for grabbing or selecting a point */
 const HIT_RADIUS = 12;
 
-/** Maximum zoom (CSS px per image px); minimum is half the fit-to-window scale */
-const MAX_SCALE = 32;
 
 /** Wheel zoom sensitivity: factor = exp(-deltaY * speed) */
 const WHEEL_ZOOM_SPEED = 0.0015;
 
-/**
- * How far (CSS px) the edge of an image larger than the canvas may be scrolled inside
- * the canvas edge, so corners aren't stuck under the toolbar. Along an axis where the
- * image fits, it is centred instead.
- */
-const EDGE_MARGIN = 48;
 
 /** Screen px per image px at which image smoothing is turned off to show real pixels */
 const PIXELATED_SCALE = 4;
@@ -146,11 +139,7 @@ function syncCanvasSize() {
   if (w !== cssW || h !== cssH) {
     if (cssW > 0 && cssH > 0) {
       for (const img of state.images) {
-        const v = img.view;
-        if (!v) continue;
-        const { px, py } = canvasToImageRaw(cssW / 2, cssH / 2, v);
-        v.offsetX = w / 2 - px * v.scale;
-        v.offsetY = h / 2 - py * v.scale;
+        if (img.view) recenterOnResize(img.view, cssW, cssH, w, h);
       }
     }
     cssW = w;
@@ -198,36 +187,16 @@ function ensureView(img) {
   return img.view;
 }
 
-/**
- * Keep the image from being scrolled out of view: along each axis, centre it if it
- * fits in the canvas, otherwise stop scrolling EDGE_MARGIN past the image edge.
- */
+/** Apply the scroll limits (view.js) for the current canvas size */
 function constrainView(img) {
-  const v = img.view;
-  const clampAxis = (offset, imgSize, canvasSize) => {
-    const size = imgSize * v.scale;
-    if (size <= canvasSize) return (canvasSize - size) / 2;
-    return Math.min(Math.max(offset, canvasSize - size - EDGE_MARGIN), EDGE_MARGIN);
-  };
-  v.offsetX = clampAxis(v.offsetX, img.width, cssW);
-  v.offsetY = clampAxis(v.offsetY, img.height, cssH);
-}
-
-function clampScale(img, scale) {
-  const min = Math.min(fitView(img).scale / 2, MAX_SCALE);
-  return Math.min(Math.max(scale, min), MAX_SCALE);
+  constrainViewTo(img.view, img.width, img.height, cssW, cssH);
 }
 
 /**
  * Zoom by `factor`, keeping the image pixel under canvas point (cx, cy) fixed.
  */
 function zoomAt(img, cx, cy, factor) {
-  const v = img.view;
-  const next = clampScale(img, v.scale * factor);
-  const k = next / v.scale;
-  v.offsetX = cx - (cx - v.offsetX) * k;
-  v.offsetY = cy - (cy - v.offsetY) * k;
-  v.scale = next;
+  zoomViewAt(img.view, cx, cy, factor, fitView(img).scale);
 }
 
 /**
@@ -683,9 +652,7 @@ function distanceToSegment(x, y, a, b) {
 function moveEdge(img, cx, cy) {
   const { px, py } = canvasToImageRaw(cx, cy, img.view);
   const [a, b] = edgeDrag.orig;
-  const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
-  const dx = clamp(px - edgeDrag.startPx, -Math.min(a.x, b.x), img.width - Math.max(a.x, b.x));
-  const dy = clamp(py - edgeDrag.startPy, -Math.min(a.y, b.y), img.height - Math.max(a.y, b.y));
+  const { dx, dy } = clampSegmentOffset(a, b, px - edgeDrag.startPx, py - edgeDrag.startPy, img.width, img.height);
 
   const i = edgeDrag.index;
   const j = (i + 1) % 4;
@@ -785,7 +752,7 @@ function updatePinch(img) {
   const midX = (a.cx + b.cx) / 2;
   const midY = (a.cy + b.cy) / 2;
   const v = img.view;
-  v.scale = clampScale(img, pinch.startScale * (dist / pinch.startDist));
+  v.scale = clampScale(pinch.startScale * (dist / pinch.startDist), fitView(img).scale);
   v.offsetX = midX - pinch.anchorPx * v.scale;
   v.offsetY = midY - pinch.anchorPy * v.scale;
   renderCanvas();

@@ -135,7 +135,7 @@ export function drawGridOverlay(ctx, img, view) {
  * limited to MAX_EXTENT units around the calibration square. If a corner is beyond
  * the horizon (the grid plane extends to infinity there), the limit applies.
  */
-function gridBounds(img, H, calibGrid) {
+export function gridBounds(img, H, calibGrid) {
   const cxs = calibGrid.map((p) => p.x);
   const cys = calibGrid.map((p) => p.y);
   const lim = {
@@ -185,7 +185,7 @@ function roundBounds(b) {
  * Pick the smallest line step whose screen spacing near the calibration square is at
  * least MIN_SPACING, so dense grids don't turn into a solid wash.
  */
-function chooseStep(Hinv, calibGrid, viewScale) {
+export function chooseStep(Hinv, calibGrid, viewScale) {
   const cx = calibGrid.reduce((s, p) => s + p.x, 0) / 4;
   const cy = calibGrid.reduce((s, p) => s + p.y, 0) / 4;
   const o = applyHomography(Hinv, cx, cy);
@@ -203,7 +203,7 @@ function chooseStep(Hinv, calibGrid, viewScale) {
  * Map the grid segment g0→g1 into image pixels: keep only the part in front of the
  * camera, then clip to the image rectangle. Returns [a, b] or null if nothing is visible.
  */
-function mapSegment(Hinv, wSign, wMin, g0, g1, img) {
+export function mapSegment(Hinv, wSign, wMin, g0, g1, img) {
   const w = (g) => wSign * (Hinv[6] * g.x + Hinv[7] * g.y + Hinv[8]);
   const w0 = w(g0);
   const w1 = w(g1);
@@ -227,7 +227,7 @@ function mapSegment(Hinv, wSign, wMin, g0, g1, img) {
 /**
  * Liang–Barsky clip of segment a→b to [0, W] × [0, H].
  */
-function clipToRect(a, b, W, H) {
+export function clipToRect(a, b, W, H) {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   let t0 = 0;

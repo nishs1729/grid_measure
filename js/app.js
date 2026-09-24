@@ -33,6 +33,11 @@ function init() {
 
   // Initial render
   onUpdate();
+
+  // Test hook (end-to-end tests only): expose state read-only when loaded with ?test=1
+  if (new URLSearchParams(location.search).has('test')) {
+    window.__gm = { state };
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);

@@ -143,6 +143,20 @@ Because the 3x3 homography matrix $H$ is invertible, downstream scripts can anal
 
 ---
 
+## Running the Tests
+
+The repository has unit tests (Node) and end-to-end tests (Playwright, real Chromium). The app itself has no dependencies; `package.json` is only for the test tools.
+
+```bash
+npm install && npx playwright install chromium   # once
+npm test                                         # unit + end-to-end
+npm run test:unit                                # fast unit tests only
+```
+
+GitHub Actions runs the suite on every push and pull request. See [TESTING.md](TESTING.md) for what's covered, how the ground-truth fixtures work, and how to add tests.
+
+---
+
 ## Downstream Analysis Scripts (`analysis/`)
 
 The repository includes Python tools in the `analysis/` directory to parse exported CSV data, compute geometric metrics, and render visualizations:

@@ -830,6 +830,9 @@ html, body {
 .instructions-modal.open {
   visibility: visible;
   pointer-events: auto;
+  /* Become visible at once when opening (so focus can move into the dialog);
+     closing keeps the delayed hide so the fade-out still plays */
+  transition: visibility 0s;
 }
 
 .instructions-backdrop {

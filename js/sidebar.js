@@ -6,6 +6,7 @@ import state, { getSelectedImage } from './state.js';
 import { getPointColor, getStatusMessage, deleteLastPoint, resetPoints, recalibrate } from './points.js';
 import { loadSetting, saveSetting } from './util.js';
 import { openInstructions } from './instructions.js';
+import { renderCanvas } from './canvas.js';
 
 /**
  * Initialize sidebar event handlers.
@@ -151,15 +152,10 @@ export function renderSidebar(onUpdate) {
       ${isLast ? '<button class="point-delete-btn" title="Delete point">&times;</button>' : ''}
     `;
 
-    // Hover highlight bidirectional
-    row.addEventListener('mouseenter', () => {
-      state.hoveredPointIndex = i;
-      onUpdate(true);
-    });
-    row.addEventListener('mouseleave', () => {
-      state.hoveredPointIndex = -1;
-      onUpdate(true);
-    });
+    // Hover highlight bidirectional. Only the row classes and the canvas are updated:
+    // rebuilding the list here would replace the row under the mouse and swallow clicks.
+    row.addEventListener('mouseenter', () => setHoveredRow(pointListEl, i));
+    row.addEventListener('mouseleave', () => setHoveredRow(pointListEl, -1));
 
     // Click to select (arrow keys then nudge it)
     row.addEventListener('click', () => {
@@ -182,6 +178,17 @@ export function renderSidebar(onUpdate) {
 
   // Calibration Diagnostics
   renderCalibrationDiagnostics(img, diagnosticsEl);
+}
+
+/**
+ * Highlight point `index` (or none) in the list and on the canvas without rebuilding the list.
+ */
+function setHoveredRow(listEl, index) {
+  state.hoveredPointIndex = index;
+  for (const row of listEl.children) {
+    row.classList.toggle('hovered', Number(row.dataset.pointIndex) === index);
+  }
+  renderCanvas();
 }
 
 // ---- Calibration Diagnostics ----

@@ -59,6 +59,27 @@ function gaussianElimination(A, n) {
   return x;
 }
 
+/** Relative tolerance for "three points in a line" (≈ sine of the angle between them) */
+const COLLINEAR_TOLERANCE = 1e-6;
+
+/**
+ * True if any three of the four points are (nearly) in a line. No homography can map
+ * such a set onto four points in general position, but the linear solver doesn't
+ * always notice: its pivot check is absolute, so the outcome depends on the
+ * coordinates' scale. This test is relative, so it works at any scale.
+ */
+export function hasCollinearTriple(pts) {
+  for (let i = 0; i < 4; i++) {
+    const [a, b, c] = pts.filter((_, j) => j !== i);
+    const ux = b.x - a.x, uy = b.y - a.y;
+    const vx = c.x - a.x, vy = c.y - a.y;
+    const cross = Math.abs(ux * vy - uy * vx);
+    const scale = Math.max(Math.hypot(ux, uy) * Math.hypot(vx, vy), Math.hypot(ux - vx, uy - vy) ** 2);
+    if (scale === 0 || cross <= COLLINEAR_TOLERANCE * scale) return true;
+  }
+  return false;
+}
+
 /**
  * Compute the 3×3 homography matrix from 4 source points (image pixels)
  * to 4 destination points (grid coordinates).
@@ -73,6 +94,10 @@ export function computeHomography(src, dst) {
   // Each correspondence gives 2 equations:
   //   srcX*h0 + srcY*h1 + h2 - dstX*srcX*h6 - dstX*srcY*h7 = dstX
   //   srcX*h3 + srcY*h4 + h5 - dstY*srcX*h6 - dstY*srcY*h7 = dstY
+
+  if (hasCollinearTriple(src) || hasCollinearTriple(dst)) {
+    throw new Error('Three of the four calibration points are in a line');
+  }
 
   const A = [];
   for (let i = 0; i < 4; i++) {
