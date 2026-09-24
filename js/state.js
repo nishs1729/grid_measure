@@ -33,6 +33,9 @@ const state = {
   /** Index of the selected point in the current image, target of arrow-key nudges (-1 = none) */
   selectedPointIndex: -1,
 
+  /** Calibration-square edge (i = P(i+1)→P(i+2), wrapping) highlighted for Ctrl+drag (-1 = none) */
+  hoveredEdgeIndex: -1,
+
   /** Loupe magnification relative to the screen; one of MAGNIFIER_ZOOM_STEPS */
   magnifierZoom: 4,
 
@@ -118,6 +121,7 @@ export function selectImage(id) {
   state.selectedImageId = id;
   state.hoveredPointIndex = -1;
   state.selectedPointIndex = -1;
+  state.hoveredEdgeIndex = -1;
   state.drag.active = false;
   state.drag.pending = null;
 }

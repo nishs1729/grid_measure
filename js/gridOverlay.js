@@ -35,6 +35,7 @@ const STYLE = {
   line: 'rgba(0, 255, 255, 0.35)',
   major: 'rgba(0, 255, 255, 0.6)',
   square: 'rgba(255, 255, 0, 0.8)',
+  squareHover: 'rgba(255, 255, 120, 1)',
 };
 
 /**
@@ -108,6 +109,23 @@ export function drawGridOverlay(ctx, img, view) {
   ctx.strokeStyle = STYLE.square;
   ctx.lineWidth = 1.5;
   ctx.stroke();
+
+  // Edge under Ctrl/Cmd hover or being dragged: thicker, with a dark outline
+  const e = state.hoveredEdgeIndex;
+  if (e >= 0 && e < 4) {
+    const a = imageToCanvas(img.points[e].pixelX, img.points[e].pixelY, view);
+    const b = imageToCanvas(img.points[(e + 1) % 4].pixelX, img.points[(e + 1) % 4].pixelY, view);
+    ctx.beginPath();
+    ctx.moveTo(a.cx, a.cy);
+    ctx.lineTo(b.cx, b.cy);
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.lineWidth = 6;
+    ctx.stroke();
+    ctx.strokeStyle = STYLE.squareHover;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
 
   ctx.restore();
 }

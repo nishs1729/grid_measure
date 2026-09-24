@@ -3,7 +3,8 @@
  *
  * Draws the current image and all point overlays on the main canvas, and handles
  * pointer interaction: placing/selecting/dragging points, zoom (Ctrl+wheel, pinch) and
- * pan (wheel / Shift+wheel, Space+drag, middle-drag, touch drag on empty area / two fingers).
+ * pan (wheel / Shift+wheel, Space+drag, middle-drag, touch drag on empty area / two fingers),
+ * and Ctrl/Cmd+drag of a calibration-square edge (translates P_i and P_i+1 together).
  *
  * All drawing and coordinate math is in CSS pixels; the backing store is scaled by
  * devicePixelRatio so rendering stays sharp on high-DPI screens.
@@ -69,6 +70,15 @@ const ignoredPointers = new Set();
 /** Last mouse position over the canvas, used to refresh the loupe after zooming */
 let lastHover = null;
 
+/** Hit distance (CSS px) for grabbing a calibration-square edge */
+const EDGE_HIT_DISTANCE = 6;
+
+/**
+ * Active Ctrl/Cmd+drag of a calibration-square edge:
+ * { pointerId, index, startPx, startPy, orig: [{x, y}, {x, y}] } or null
+ */
+let edgeDrag = null;
+
 /**
  * Initialize the canvas module.
  *
@@ -93,6 +103,10 @@ export function initCanvas(onUpdate) {
     if (!state.drag.active) hideMagnifier();
   });
   canvas.addEventListener('wheel', onWheel, { passive: false });
+  // On macOS Ctrl+click opens the context menu; don't let it interrupt an edge drag
+  canvas.addEventListener('contextmenu', (e) => {
+    if (edgeDrag || state.hoveredEdgeIndex >= 0) e.preventDefault();
+  });
   // Stop the middle button from starting the browser's autoscroll
   canvas.addEventListener('mousedown', (e) => {
     if (e.button === 1) e.preventDefault();
@@ -407,6 +421,32 @@ function onPointerDown(e) {
 
   if (e.button !== 0) return; // other buttons unused
 
+  // Ctrl/Cmd + press on a calibration-square edge: move that edge. Ctrl/Cmd + press
+  // anywhere else does nothing (it never adds a point).
+  if (isEdgeModifier(e) && e.pointerType !== 'touch') {
+    const index = findEdgeNear(img, cx, cy);
+    if (index >= 0) {
+      e.preventDefault();
+      canvas.setPointerCapture(e.pointerId);
+      const { px, py } = canvasToImageRaw(cx, cy, img.view);
+      const a = img.points[index];
+      const b = img.points[(index + 1) % 4];
+      edgeDrag = {
+        pointerId: e.pointerId,
+        index,
+        startPx: px,
+        startPy: py,
+        orig: [{ x: a.pixelX, y: a.pixelY }, { x: b.pixelX, y: b.pixelY }],
+      };
+      state.hoveredEdgeIndex = index;
+      state.hoveredPointIndex = -1;
+      canvas.style.cursor = 'move';
+      hideMagnifier();
+      renderCanvas();
+    }
+    return;
+  }
+
   const coords = canvasToImage(cx, cy, img.view, img.width, img.height);
   if (!coords) {
     // Press outside the image: just clear the selection
@@ -479,6 +519,12 @@ function onPointerMove(e) {
     return;
   }
 
+  if (edgeDrag && edgeDrag.pointerId === e.pointerId) {
+    moveEdge(img, cx, cy);
+    onUpdateCb(true); // true = sidebar + canvas only
+    return;
+  }
+
   if (state.drag.active) {
     const { px, py } = canvasToImageClamped(cx, cy, img);
     showMagnifier(e, img, px, py);
@@ -502,6 +548,14 @@ function onPointerMove(e) {
     canvas.style.cursor = 'grab';
     return;
   }
+  if (isEdgeModifier(e)) {
+    updateEdgeHover(img, cx, cy);
+    return;
+  }
+  if (state.hoveredEdgeIndex !== -1) {
+    state.hoveredEdgeIndex = -1;
+    renderCanvas();
+  }
   if (!coords) {
     canvas.style.cursor = 'default';
     return;
@@ -520,6 +574,20 @@ function onPointerUp(e) {
   if (pan && pan.pointerId === e.pointerId) {
     pan = null;
     canvas.style.cursor = panKeyHeld ? 'grab' : 'crosshair';
+    return;
+  }
+
+  if (edgeDrag && edgeDrag.pointerId === e.pointerId) {
+    edgeDrag = null;
+    // Keep the highlight only if Ctrl/Cmd is still held over the edge
+    const img = getSelectedImage();
+    const { cx, cy } = mouseToCanvas(e, canvas);
+    if (img && isEdgeModifier(e)) updateEdgeHover(img, cx, cy);
+    else {
+      state.hoveredEdgeIndex = -1;
+      canvas.style.cursor = 'crosshair';
+    }
+    onUpdateCb(); // full update: thumbnail status may have changed
     return;
   }
 
@@ -555,7 +623,107 @@ function onPointerUp(e) {
 function onPointerCancel(e) {
   if (endTouch(e.pointerId)) return;
   if (pan && pan.pointerId === e.pointerId) pan = null;
+  if (edgeDrag && edgeDrag.pointerId === e.pointerId) {
+    edgeDrag = null;
+    state.hoveredEdgeIndex = -1;
+    onUpdateCb();
+  }
   cancelDrag();
+}
+
+// ---- Calibration-square edge dragging ----
+
+/** Ctrl, or Cmd on macOS (where Ctrl+click is a right-click) */
+function isEdgeModifier(e) {
+  return e.ctrlKey || e.metaKey;
+}
+
+/**
+ * Edges can be grabbed only while the yellow calibration square is drawn:
+ * P1–P4 placed, calibration succeeded, and the grid overlay is on.
+ */
+function edgesAvailable(img) {
+  return state.showGrid && img.points.length >= 4 && img.calibration.homography != null;
+}
+
+/**
+ * Index of the calibration-square edge within EDGE_HIT_DISTANCE of canvas point
+ * (cx, cy), or -1. Presses close to a corner point don't count as an edge.
+ */
+function findEdgeNear(img, cx, cy) {
+  if (!edgesAvailable(img)) return -1;
+  const corners = img.points.slice(0, 4).map((p) => imageToCanvas(p.pixelX, p.pixelY, img.view));
+  if (corners.some((c) => Math.hypot(c.cx - cx, c.cy - cy) <= HIT_RADIUS)) return -1;
+
+  let best = -1;
+  let bestDist = EDGE_HIT_DISTANCE;
+  for (let i = 0; i < 4; i++) {
+    const d = distanceToSegment(cx, cy, corners[i], corners[(i + 1) % 4]);
+    if (d <= bestDist) {
+      bestDist = d;
+      best = i;
+    }
+  }
+  return best;
+}
+
+function distanceToSegment(x, y, a, b) {
+  const dx = b.cx - a.cx;
+  const dy = b.cy - a.cy;
+  const len2 = dx * dx + dy * dy;
+  const t = len2 === 0 ? 0 : Math.min(1, Math.max(0, ((x - a.cx) * dx + (y - a.cy) * dy) / len2));
+  return Math.hypot(x - (a.cx + t * dx), y - (a.cy + t * dy));
+}
+
+/**
+ * Translate the dragged edge by the pointer's movement since the press. Both ends move
+ * by the same offset, so the edge keeps its length and direction; the offset is
+ * limited so neither end leaves the image.
+ */
+function moveEdge(img, cx, cy) {
+  const { px, py } = canvasToImageRaw(cx, cy, img.view);
+  const [a, b] = edgeDrag.orig;
+  const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+  const dx = clamp(px - edgeDrag.startPx, -Math.min(a.x, b.x), img.width - Math.max(a.x, b.x));
+  const dy = clamp(py - edgeDrag.startPy, -Math.min(a.y, b.y), img.height - Math.max(a.y, b.y));
+
+  const i = edgeDrag.index;
+  const j = (i + 1) % 4;
+  // Set the first end directly; movePoint on the second recalibrates once with both moved
+  img.points[i].pixelX = a.x + dx;
+  img.points[i].pixelY = a.y + dy;
+  movePoint(j, b.x + dx, b.y + dy);
+}
+
+/**
+ * Highlight the edge under the pointer while Ctrl/Cmd is held, and show a move cursor.
+ */
+function updateEdgeHover(img, cx, cy) {
+  const index = findEdgeNear(img, cx, cy);
+  canvas.style.cursor = index >= 0 ? 'move' : 'default';
+  if (state.hoveredPointIndex !== -1) state.hoveredPointIndex = -1;
+  if (state.hoveredEdgeIndex !== index) {
+    state.hoveredEdgeIndex = index;
+    renderCanvas();
+  }
+}
+
+/**
+ * Ctrl/Cmd pressed or released without moving the mouse: refresh the edge highlight
+ * at the last mouse position (driven by keyboard.js).
+ */
+export function setEdgeModifier(held) {
+  if (edgeDrag) return;
+  const img = getSelectedImage();
+  if (!img?.view) return;
+  if (held && lastHover) {
+    const { cx, cy } = mouseToCanvas(lastHover, canvas);
+    updateEdgeHover(img, cx, cy);
+  } else if (!held && state.hoveredEdgeIndex !== -1) {
+    state.hoveredEdgeIndex = -1;
+    canvas.style.cursor = 'crosshair';
+    renderCanvas();
+  }
 }
 
 /**

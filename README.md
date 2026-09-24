@@ -58,6 +58,7 @@ Right-click `index.html` and select **"Live Preview: Show Preview"** (or **"Open
    - **Magnifier Loupe**: Off by default — press **`Z`** or click the **Zoom** button (top-right of canvas) to turn it on, then hover over the canvas. Displays a magnified view (2×, 4×, 8× or 16× relative to the screen, shown at the bottom of the loupe) with a **gap crosshair** (arms leave a clear gap around the center) and a **center dot** marking the exact sampled pixel. The crosshair uses a dark outline for visibility on both white and dark image backgrounds. Change the magnification with **`+`** / **`-`** or **Alt**+scroll; it is remembered in this browser. Press **`Z`** or click **Zoom** again to turn the loupe off.
    - **Drag to Reposition**: Drag any existing point to adjust it; moving P1–P4 instantly recalculates all measurements. A press only becomes a drag after the pointer moves more than 3 screen pixels, so clicking a point never nudges it by accident.
    - **Grid Overlay**: Once an image is calibrated, the fitted grid is drawn back onto it: cyan lines at every grid unit (every 10th stronger) and the calibration square P1–P4 in yellow. If calibration is good, the lines sit on the paper's grid across the whole sheet. When lines would be closer than 6 screen pixels, only every 2nd, 5th, 10th… line is drawn. Press **`G`** or click **Grid** (top-right of canvas) to hide or show it.
+   - **Move a Calibration Edge**: Hold **Ctrl** (**Cmd** on macOS), press on one of the yellow calibration-square edges and drag. Both of its points move together, so the edge keeps its length and direction while the other two calibration points stay put; calibration updates live. Holding Ctrl/Cmd highlights the edge under the mouse. This works while the grid overlay is shown; Ctrl/Cmd+click elsewhere does nothing. The edge stops at the image border.
    - **Select & Nudge**: Click a point (on the canvas or its row in the sidebar) to select it; it gets a white ring. Arrow keys then move it by **0.1 px**, **Shift**+arrow by **1 px**, **Alt**+arrow by **10 px**. Press **`Esc`** or click an empty spot to deselect (clicking empty image area also adds a new point, as usual).
    - **Touch Screens**: Tap to place, press-and-drag to move points. The loupe appears above your finger (or beside it near the top edge) so the spot stays visible.
    - **Delete / Reset**: Click the **×** button on the latest point, use **Delete Last**, or press **`Delete`**/**`Backspace`**; click **Reset Points** or press **`R`** to clear the image.
@@ -74,6 +75,7 @@ Right-click `index.html` and select **"Live Preview: Show Preview"** (or **"Open
 | **Left Click** | Place calibration or measurement point (on empty image area) |
 | **Click point** | Select it for nudging |
 | **Drag point** | Reposition point; recalculates in real time |
+| **Ctrl/Cmd + drag yellow edge** | Move a calibration edge, keeping its length and direction |
 | **Arrow keys** | Nudge the selected point 0.1 px (**Shift**: 1 px, **Alt**: 10 px) |
 | **Hover canvas** | Show magnifier zoom loupe (when turned on with **`Z`**) |
 | **Scroll** / **Shift+scroll** | Scroll the image vertically / horizontally |

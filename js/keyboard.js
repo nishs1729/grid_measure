@@ -4,12 +4,12 @@
  * All shortcuts live here so they can't clash. Shortcuts are ignored while typing in a
  * form control, while Ctrl/Cmd is held (browser shortcuts), and while the instructions
  * panel is open (its own Esc handler is the only one active then). Alt is only used
- * with the arrow keys.
+ * with the arrow keys. Ctrl/Cmd on its own only toggles the calibration-edge highlight.
  */
 
 import state, { getSelectedImage, selectNextImage, selectPrevImage } from './state.js';
 import { deleteLastPoint, movePoint } from './points.js';
-import { toggleMagnifier, toggleGrid, resetView, setPanKey, stepMagnifierZoom } from './canvas.js';
+import { toggleMagnifier, toggleGrid, resetView, setPanKey, setEdgeModifier, stepMagnifierZoom } from './canvas.js';
 import { requestResetPoints } from './sidebar.js';
 import { isInstructionsOpen } from './instructions.js';
 import { isTypingTarget } from './util.js';
@@ -27,6 +27,11 @@ const ARROW_DIRECTIONS = {
  */
 export function initKeyboard(onUpdate) {
   document.addEventListener('keydown', (e) => {
+    // Holding Ctrl/Cmd highlights the calibration edge under the mouse (Ctrl+drag moves it)
+    if (e.key === 'Control' || e.key === 'Meta') {
+      if (!isInstructionsOpen()) setEdgeModifier(true);
+      return;
+    }
     if (e.ctrlKey || e.metaKey) return; // leave browser shortcuts (Ctrl+R etc.) alone
     if (isTypingTarget(e.target) || isInstructionsOpen()) return;
 
@@ -92,12 +97,19 @@ export function initKeyboard(onUpdate) {
 
   // Release Space panning; also swallow the keyup so a focused button isn't "clicked"
   document.addEventListener('keyup', (e) => {
+    if (e.key === 'Control' || e.key === 'Meta') {
+      setEdgeModifier(false);
+      return;
+    }
     if (e.key !== ' ') return;
     setPanKey(false);
     if (!isTypingTarget(e.target)) e.preventDefault();
   });
   // Keyup is lost if the window loses focus while Space is held
-  window.addEventListener('blur', () => setPanKey(false));
+  window.addEventListener('blur', () => {
+    setPanKey(false);
+    setEdgeModifier(false);
+  });
 }
 
 /**
