@@ -2,6 +2,8 @@
 
 A lightweight, browser-based tool to calibrate camera images against a planar grid and measure real-world distances. Runs 100% client-side with zero dependencies.
 
+**[Try it online](https://nishs1729.github.io/grid_measure/)**  — no install needed; images stay in your browser.
+
 ---
 
 ## What It Is & What It's Used For
